@@ -17,7 +17,7 @@ def reporte(tokenizador, tabla_sentimientos):
 
     tabla_sentimientos = cargar_palabras_y_puntajes("palabras_y_puntajes.txt")
 
-    # preparar los archivos de output
+    # Preparar los archivos de output
     eliminar_archivo("tabla_lexemas.txt")
     eliminar_archivo("afd.json")
     eliminar_archivo("reporte.txt")

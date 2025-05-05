@@ -17,8 +17,10 @@ class AFD:
     def agregar_transicion(self, estado_origen, lexema, estado_destino):
         if estado_origen not in self.transiciones:
             self.transiciones[estado_origen] = {}
+
         if lexema in self.transiciones[estado_origen]:
-            raise Exception("Transicion duplicada")
+            raise Exception(f"Transicion duplicada: {lexema}")
+
         self.transiciones[estado_origen][lexema] = estado_destino
 
         # No incrementar el contador aquí
