@@ -12,6 +12,7 @@ venv/
 .env
 *.env
 *.env.*
+.venv
 
 # Configuración de editores
 .vscode/

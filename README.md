@@ -1,6 +1,9 @@
 # Tokenización 
+
 ## Función
+
 ### Textos analizables (Test)
+
 ````
 prueba.txt
 prueba-texto1-negativo.txt
@@ -9,28 +12,24 @@ prueba-texto3-positivo.txt
 prueba-texto4-neutral.txt
 prueba-texto5-negativo.txt
 ````
+
 ### Convertir audio en texto
-Herramienta que solo transcribe audio a texto se encuentra en la carpeta audios:
-`audio-texto.py`
 
-ó
+- Página 1:
+  https://transcri.io/es
+- Página 2:
+  https://app.transcribetube.com/auth/login
 
-Página 1:
-````
-https://transcri.io/es
-````
-Página 2:
-```
-https://app.transcribetube.com/auth/login
-```
 Luego usar chatgpt con el promt: 
-````
-Identifica y separa los diálogos entre el Agente y el Cliente en el siguiente texto:
 
+```text
+Identifica y separa los diálogos entre el Agente y el Cliente en el siguiente texto:
+<insertar el texto>
 Dame el resultado en el formato 'Agente:' y 'Cliente:'
-```` 
+``` 
 
 ### Estructura del AFD
+
 La clase `AFD` representa un autómata que gestiona estados, transiciones y lexemas.
 Cada vez que se evalua un lexema, el AFD determina si puede pasar de un estado a otro basado en
 las transiciones definidas.
@@ -43,15 +42,18 @@ A través de un conjunto de transiciones, el AFD puede aceptar diferentes lexema
 que se procesa un lexema, se registra su frecuencia de aparición.
 
 ### Transiciones
+
 Las trancisiones se configuran utilizando el método `agregar_transicion`, donde se especifica
 un estado de origen, un lexema y un estado de destino.
 
 ### Evaluación de Lexemas
+
 El método `evaluar_lexema` toma un lexema, verifica si existe una transición válida desde el
 estado actual (inicialmente, estado_inicial), y actualiza el estado.
 Si el lexema lleva a un estado final, se considera aceptado.
 
 ### Tokenización
+
 La clase `TokenizadorAFD` utiliza el AFD para tokenizar un texto.
 Al recibir un texto, lo divide en lexemas y evalúa cada uno, almacenando el resultado en una
 lista. 
@@ -65,6 +67,7 @@ En caso de que un lexema no sea aceptado, se registra como un error léxico, lo 
 análisis adicional sobre los términos que no encajan en las categorías predefinidas.
 
 ### Análisis de Sentimiento
+
 Utiliza una tabla de sentimientos que asocia palabras con puntajes emocionales, el programa
 calcula un puntaje total que indica si el sentimiento general del texto es positivo, negativo o
 neutral.
@@ -72,13 +75,16 @@ Esto se logra mediante la iteración a través de los lexemas aceptados y la acu
 puntajes.
 
 ### Salidas
+
 El algoritmo realiza un reporte de la conversación dividido en tres partes:
-````
+
+```txt
 ├───output
 │       afd.json
 │       reporte.txt
 │       tabla_lexemas.txt
-````
+```
+
 1. `reporte.txt`:
    Ofrece un análisis del texto procesado, incluyendo el sentimiento general (positivo,
    negativo o neutral), el puntaje total de las palabras, y listas de palabras positivas y
@@ -92,6 +98,7 @@ El algoritmo realiza un reporte de la conversación dividido en tres partes:
    de los lexemas detectados.
 
 ### Conclusiones
+
 El Tokenizador AFD es una herramienta robusta y versátil para el procesamiento de texto y
 análisis de sentimientos.
 Su diseño basado en un AFD permite una categorización eficiente y un seguimiento del uso de

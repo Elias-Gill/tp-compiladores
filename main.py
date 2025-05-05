@@ -1,4 +1,5 @@
 import os
+import whisper
 
 from tokenizer.afd import TokenizadorAFD
 from tokenizer.analisis import analizar_sentimiento, verificar_protocolo
@@ -8,7 +9,23 @@ from tokenizer.file_utils import (
     eliminar_archivo,
     eliminar_palabra_sentimiento,
 )
-from tokenizer.menu import mostrar_menu
+
+
+def mostrar_menu():
+    print()
+    print("-------------------------------------------------------")
+    print("                   --- Menú ---                        ")
+    print("-------------------------------------------------------")
+    print("  1. Analizar texto                                    ")
+    print("  2. Añadir nueva palabra a la tabla de sentimientos   ")
+    print("  3. Eliminar palabra de la tabla de sentimientos      ")
+    print("  4. Convertir audio                                   ")
+    print("  5. Salir                                             ")
+    print("-------------------------------------------------------")
+    seleccion = input("Seleccione una opción: ")
+    print()
+
+    return seleccion
 
 
 def reporte(tokenizador, tabla_sentimientos):
@@ -138,6 +155,12 @@ def main():
             tabla_sentimientos = cargar_palabras_y_puntajes("palabras_y_puntajes.txt")
 
         elif opcion == "4":
+            model = whisper.load_model("medium")
+            f = input("Ingrese la direccion del archivo a convertir: ")
+            resultado = model.transcribe(f)
+            print(resultado["text"])
+
+        elif opcion == "5":
             print("Saliendo del programa.")
             break
 
