@@ -4,6 +4,7 @@ class NodoSentimiento:
         self.puntaje = puntaje
         self.siguiente = None
 
+
 class TablaSentimientos:
     def __init__(self):
         self.cabeza = None

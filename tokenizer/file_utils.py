@@ -14,7 +14,9 @@ def eliminar_archivo(nombre_archivo):
 
 def cargar_palabras_y_puntajes(archivo):
     tabla_sentimientos = TablaSentimientos()
-    with open(os.path.join("tokenizer", "sentiment_symbols", archivo), "r", encoding="utf-8") as f:
+    with open(
+        os.path.join("tokenizer", "sentiment_symbols", archivo), "r", encoding="utf-8"
+    ) as f:
         for linea in f:
             palabra, puntaje = linea.strip().split(",")
             tabla_sentimientos.agregar_palabra(palabra, int(puntaje))

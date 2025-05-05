@@ -1,5 +1,6 @@
 import re
 
+
 def analizar_sentimiento(lexemas, tabla_sentimientos, tokenizador):
     puntaje_total = 0
     palabras_positivas = []
@@ -9,18 +10,18 @@ def analizar_sentimiento(lexemas, tabla_sentimientos, tokenizador):
 
     for lexema in lexemas:
         estado, es_aceptado = tokenizador.afd.evaluar_lexema(lexema)
-        if es_aceptado and estado == 'q_PALABRA_PROHIBIDA':
+        if es_aceptado and estado == "q_PALABRA_PROHIBIDA":
             palabras_rudas_detectadas = True
-            break 
+            break
 
     if palabras_rudas_detectadas:
         return {
             "sentimiento": "Negativo",
             "puntaje_total": -1,
             "palabras_positivas": [],
-            "palabras_negativas": []
+            "palabras_negativas": [],
         }
-    
+
     for lexema in lexemas:
         puntaje = tabla_sentimientos.obtener_puntaje(lexema)
         puntaje_total += puntaje
@@ -29,23 +30,28 @@ def analizar_sentimiento(lexemas, tabla_sentimientos, tokenizador):
             palabras_positivas.append(lexema)
         elif puntaje < 0:
             palabras_negativas.append(lexema)
-    
-    sentimiento = "Positivo" if puntaje_total > 0 else "Negativo" if puntaje_total < 0 else "Neutral"
-    
+
+    sentimiento = (
+        "Positivo"
+        if puntaje_total > 0
+        else "Negativo" if puntaje_total < 0 else "Neutral"
+    )
+
     return {
         "sentimiento": sentimiento,
         "puntaje_total": puntaje_total,
         "palabras_positivas": palabras_positivas,
-        "palabras_negativas": palabras_negativas
+        "palabras_negativas": palabras_negativas,
     }
 
-# Función para verificar el protocolo de atención 
+
+# Función para verificar el protocolo de atención
 def verificar_protocolo(lexemas, tokenizador):
     resultados = {
         "saludo": False,
         "identificacion": False,
         "despedida": False,
-        "palabras_prohibidas": False
+        "palabras_prohibidas": False,
     }
 
     analizando_agente = False
@@ -73,19 +79,20 @@ def verificar_protocolo(lexemas, tokenizador):
 
     return resultados
 
+
 def procesar_mensaje_agente(mensaje_agente, tokenizador, resultados):
-    mensaje = ' '.join(mensaje_agente)
-    lexemas = re.findall(r'\b\w+\b', mensaje.lower())
+    mensaje = " ".join(mensaje_agente)
+    lexemas = re.findall(r"\b\w+\b", mensaje.lower())
 
     for lexemas in lexemas:
-        estado,es_aceptado = tokenizador.afd.evaluar_lexema(lexemas)
+        estado, es_aceptado = tokenizador.afd.evaluar_lexema(lexemas)
 
         if es_aceptado:
-            if estado == 'q_SALUDO':
+            if estado == "q_SALUDO":
                 resultados["saludo"] = True
-            elif estado == 'q_IDENTIFICACION':
+            elif estado == "q_IDENTIFICACION":
                 resultados["identificacion"] = True
-            elif estado == 'q_DESPEDIDA':
+            elif estado == "q_DESPEDIDA":
                 resultados["despedida"] = True
-            elif estado == 'q_PALABRA_PROHIBIDA':
+            elif estado == "q_PALABRA_PROHIBIDA":
                 resultados["palabras_prohibidas"] = True

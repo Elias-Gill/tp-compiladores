@@ -86,7 +86,9 @@ class TokenizadorAFD:
         palabras_positivas = []
         palabras_negativas = []
         with open(
-            os.path.join("tokenizer", "sentiment_symbols", archivo), "r", encoding="utf-8"
+            os.path.join("tokenizer", "sentiment_symbols", archivo),
+            "r",
+            encoding="utf-8",
         ) as f:
             for linea in f:
                 palabra, puntaje = linea.strip().split(",")
@@ -102,7 +104,9 @@ class TokenizadorAFD:
     def cargar_palabras(self, archivo):
         lexemas = []
         with open(
-            os.path.join("tokenizer", "sentiment_symbols", archivo), "r", encoding="utf-8"
+            os.path.join("tokenizer", "sentiment_symbols", archivo),
+            "r",
+            encoding="utf-8",
         ) as f:
             for linea in f:
                 lexemas.append(linea.strip())  # Agrega cada línea como frase
