@@ -1,0 +1,10 @@
+def mostrar_menu():
+    print("-----------------------------------------------------------------")
+    print("                         --- Menú ---                           ")
+    print("-----------------------------------------------------------------")
+    print("  1. Analizar texto                                           ")
+    print("  2. Añadir nueva palabra a la tabla de sentimientos         ")
+    print("  3. Eliminar palabra de la tabla de sentimientos            ")
+    print("  4. Salir                                                   ")
+    print("-----------------------------------------------------------------")
+    return input("Seleccione una opción: ")

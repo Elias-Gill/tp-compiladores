@@ -1,0 +1,33 @@
+Agente: ¡Buenos días! Gracias por contactar con el servicio al cliente de ConexiónNet. Mi nombre es Johanna. ¿Cómo puedo ayudarle hoy?
+
+Cliente: Hola, estoy teniendo algunos problemas con mi internet. Pago por 100 Mbps, pero últimamente he notado que la velocidad es mucho más baja.
+
+Agente: Lamento escuchar eso, y estoy aquí para ayudarle a resolverlo. ¿Podría proporcionarme su nombre completo y el número de cuenta para que pueda revisar su situación?
+          
+Cliente: Claro, soy Juan Pérez y mi número de cuenta es 12345678.
+
+Agente: ¡Gracias, Juan! Voy a revisar su cuenta ahora mismo... (pausa) Veo que efectivamente tiene un plan de 100 Mbps. Déjeme hacer una prueba de línea para verificar cómo está funcionando su conexión en este momento.
+
+Cliente: Sí, por favor. Me gustaría que se resolviera pronto.      
+      
+Agente: ¡Entiendo perfectamente! Estoy realizando la prueba... (pausa) Vaya, parece que hay algunas fluctuaciones en la señal. No se preocupe, eso es algo que podemos solucionar. Voy a reiniciar su línea desde aquí, lo que puede ayudar a estabilizar la conexión. Esto tomará solo un minuto, y perderá la conexión brevemente. ¿Le parece bien?
+
+Cliente: Sí, eso suena bien. Espero que funcione.
+
+Agente: ¡Genial! Estoy reiniciando su línea... (pausa) Listo. El reinicio se ha completado. Ahora, por favor, reinicie también su módem y router manualmente. Simplemente desconéctelos de la corriente durante 30 segundos y luego vuelva a conectarlos. Esto debería refrescar la señal.
+
+Cliente: Está bien, lo haré. ¿Y si eso no soluciona el problema?
+
+Agente: Si después de reiniciar su equipo el problema persiste, no se preocupe. Programaremos una visita de un técnico a su domicilio para asegurarnos de que todo esté en orden. Queremos que disfrute del servicio por el que está pagando.
+
+Cliente: Eso suena bien. Solo quiero que funcione como debería.
+
+Agente: Lo comprendo completamente, Juan. Estoy segura de que podremos resolver esto. Espero que el reinicio funcione, pero si no, estaremos aquí para ayudarle. ¿Hay algo más en lo que pueda asistirte hoy?
+
+Cliente: No, eso es todo. Solo espero que se solucione pronto.
+
+Agente: ¡Perfecto! Agradezco su paciencia y confianza. No dude en llamarnos si necesita algo más. Le deseo un excelente día y que su servicio se estabilice pronto. ¡Estamos aquí para ayudarle!
+
+Cliente: Gracias, adiós.
+
+Agente: ¡Adiós, Juan! Que tenga un buen día.

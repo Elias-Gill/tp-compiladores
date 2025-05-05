@@ -1,0 +1,25 @@
+Agente: Buenos días, usted ha contactado con el servicio de atención al cliente de ConexiónNet. Mi nombre es Laura. ¿En qué puedo ayudarle hoy?
+
+Cliente: Buenos días, tengo un problema con mi router. Dejó de funcionar, y creo que será necesario reemplazarlo. ¿Podrían enviarme un técnico para que me lo instalen de nuevo? Mi nombre es Juan y mi número de cédula es 12345678.
+
+Agente: Permítame un momento mientras reviso su cuenta y verifico el estado de su servicio… Veo que tiene un plan activo con nosotros y que no ha habido reportes recientes de fallas. Vamos a realizar una prueba remota para confirmar si es necesario reemplazar el equipo o si hay algún otro problema que podamos resolver sin necesidad de enviar un técnico. ¿Está bien para usted?
+
+Cliente: Sí, hagan la prueba, pero creo que el router ya no funciona.
+
+Agente: Entiendo su preocupación, Juan. Estamos realizando la prueba remota en este momento... Gracias por la espera. De acuerdo con los resultados, el router no responde adecuadamente debido a algún tipo de falla. Parece que, efectivamente, podría ser necesario reemplazarlo. Procederé a generar una solicitud para que un técnico se acerque a su domicilio. ¿Le gustaría que programe la visita para el día de mañana?
+
+Cliente: Sí. ¿A qué hora podrían venir?
+
+Agente: Podemos agendar la visita entre las 9:00 a.m. y 12:00 p.m. o entre las 2:00 p.m. y 5:00 p.m. ¿Cuál de estos horarios le resulta más conveniente?
+
+Cliente: El horario de la mañana, por favor.
+
+Agente: Entonces he programado la visita del técnico para mañana entre las 9:00 a.m. y 12:00 p.m. El técnico revisará el router y, si es necesario, procederá con el reemplazo. ¿Hay algo más en lo que pueda ayudarle hoy, Juan?
+
+Cliente: No, eso sería todo. Excelente gracias por la ayuda.
+
+Agente: De nada, Juan. Me alegra haber podido ayudarle y gracias por su paciencia. Si tiene alguna otra consulta o problema, no dude en contactarnos nuevamente. ¡Que tenga un buen día!
+
+Cliente: Gracias, igualmente. Adiós. Muy amable.
+
+Agente: Adiós, Juan. Que tenga un buen resto de jornada.

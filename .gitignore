@@ -1,0 +1,60 @@
+# Bytecode y archivos temporales
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+.env/
+.venv/
+
+# Archivos de configuración del entorno
+.env
+*.env
+*.env.*
+
+# Configuración de editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos generados por herramientas
+*.log
+*.pot
+*.mo
+*.cache
+*.tmp
+*.bak
+
+# Archivos de Jupyter Notebook
+.ipynb_checkpoints
+
+# Archivos de pruebas
+htmlcov/
+.tox/
+.nox/
+coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+test-results.xml
+junit-*.xml
+
+# Distribución/Build
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# Archivos de pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Archivos creados por el sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+output/

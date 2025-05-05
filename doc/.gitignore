@@ -1,0 +1,57 @@
+# Archivos auxiliares generados por LaTeX
+*.bak0
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+
+# Archivos generados por editores
+*.fdb_latexmk
+*.blg
+*.bbl
+*.run.xml
+*.bcf
+*.idx
+*.ilg
+*.ind
+*.glo
+*.gls
+*.acn
+*.acr
+*.alg
+
+# Archivos temporales y de backup
+*~
+*.bak
+*.tmp
+*.swp
+*.backup
+
+# Salidas específicas de compiladores
+*_minted*
+*.nav
+*.snm
+*.vrb
+
+# carpetas comunes de latexmk y arara
+latex.out/
+arara.log
+
+# Archivos de configuración de editores
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Archivos de compilacion
+*.dvi
+*.pdf
+*.ps
+*.synctex.gz
+*.synctex(busy)

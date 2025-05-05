@@ -1,0 +1,3 @@
+Agente: hola No quiero saludarlo. Mi nombre es Manuel, 
+Cliente: buenos hola que tal, tengo una duda, estupendo, estupendo, irresponsable
+Agente: Chau

@@ -1,0 +1,62 @@
+Agente:
+Buenos días, ¡Gracias por contactar con el servicio al cliente de ConexiónNet! Mi nombre es Yamil. ¿En qué puedo ayudarle hoy?
+
+Cliente:
+Mira, estoy harto de llamarles una y otra vez. Mi internet es un desastre, y nadie ha hecho nada. Pago por 100 Mbps y estoy recibiendo una velocidad que es una broma. ¡Es inaceptable!
+
+Agente:
+Lamento mucho escuchar eso, señor. Entiendo que debe ser frustrante, pero estoy aquí para ayudarle. ¿Podría proporcionarme sus datos completos y el número de cuenta para poder revisar su situación?
+       
+Cliente:
+¡Juan Pérez! Mi número de cuenta es 12345678. Y no es la primera vez que doy esa información. Parece que cada vez que les hablo, tengo que repetir lo mismo y no pasa nada. Esto es una pérdida de tiempo.
+
+Agente:
+Entiendo, Juan, y créame que quiero solucionar este problema lo más rápido posible para usted. Estoy revisando su cuenta en este momento... (pausa) Veo que tiene un plan de 100 Mbps, pero también noto que ha reportado problemas similares en el pasado. Permítame hacer una prueba de línea para ver si detectamos alguna irregularidad.             
+                                                  
+Cliente:
+¡Ya me hicieron esas pruebas un montón de veces! ¡Siempre lo mismo! ¿Por qué no envían a un técnico de una vez?
+
+Agente:
+Entiendo su frustración, Juan, y le aseguro que quiero resolver esto. El motivo por el que hacemos estas pruebas es para evitar que pierda más tiempo innecesariamente esperando a un técnico, cuando a veces el problema puede resolverse remotamente. Déjeme ayudarle a comprobarlo, ¿de acuerdo?
+
+Cliente:    
+Está bien, haz lo que tengas que hacer, pero si no se soluciona, quiero una compensación. ¡No pienso seguir pagando por este servicio pésimo!
+
+Agente:
+Lo entiendo. Si los problemas persisten, revisaremos el caso y discutiremos una posible compensación. Ahora mismo, estamos ejecutando la prueba en su línea... (pausa) Veo que hay fluctuaciones en la señal. Voy a reiniciar su línea desde aquí, lo que puede ayudar a estabilizar la conexión. Esto tomará un minuto y perderá la conexión brevemente. ¿Puedo proceder?
+
+Cliente:
+Claro, ¿qué más da? No tengo internet de todas maneras, ¿no?.
+
+Agente:
+Gracias por su paciencia. Estoy reiniciando su línea. Listo. El reinicio ha sido completado. Por favor, reinicie también su módem y router manualmente, desconectándolos de la corriente durante 30 segundos y volviéndolos a conectar. Esto debería ayudar a refrescar la señal.
+
+Cliente:
+Esto es ridículo. ¿Y si no funciona, qué?
+
+Agente:
+Si después de reiniciar su equipo el problema persiste, le enviaríamos un técnico a su domicilio para revisar el estado de la conexión. Le aseguro que estamos comprometidos en resolver este inconveniente.
+
+Cliente:
+No sé si confío en eso. ¡Todo lo que quiero es tener el servicio por el que estoy pagando!
+
+Agente:
+Lo entiendo completamente, Juan, y su insatisfacción es totalmente válida. Le recomiendo probar este reinicio. Si no ve una mejora, por favor, no dude en llamarnos inmediatamente y programaremos la visita del técnico. Si no logramos solucionarlo, también evaluaremos la compensación que menciona.
+
+Cliente:
+Está bien, voy a probar lo que me dices. Pero espero que no me estén tomando el pelo con esto.
+
+Agente:
+Estamos aquí para ayudarle, Juan, no sea tonto. De verdad espero que esta solución funcione, pero si no es así, haremos todo lo posible para resolverlo cuanto antes. ¿Hay algo más en lo que pueda asistirle hoy?
+
+Cliente:
+No, solo asegúrense de que funcione.
+
+Agente:
+Gracias por su paciencia. Si tiene cualquier otra duda, no dude en contactarnos. Espero que tenga un buen día y que su servicio se estabilice. Estamos aquí para ayudarle.
+
+Cliente:
+Ya veremos. Adiós.
+
+Agente:
+Adiós, Juan, que tenga un buen día.

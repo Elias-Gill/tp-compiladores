@@ -1,0 +1,37 @@
+Agente: Buenos días, gracias por contactar con el servicio de atención al cliente de ConexiónNet. Mi nombre es Celia. ¿En qué puedo ayudarle hoy?
+
+Cliente: Hola, tengo un problema con mi conexión a internet. La velocidad no parece ser la correcta.
+
+Agente: Lamento escuchar eso. ¿Podría proporcionarme su nombre completo y el número de cuenta para revisar su situación?
+
+Cliente: Claro, mi nombre es Juan Pérez y mi número de cuenta es 12345678.
+
+Agente: Gracias, Juan. Estoy revisando su cuenta en este momento... Veo que tiene un plan de 100 Mbps. Permítame hacer una prueba en su línea para verificar si hay algún problema con la señal.
+
+Cliente: Está bien, espero que lo puedan solucionar pronto.
+
+Agente: Gracias por su paciencia. Estamos ejecutando la prueba... Vemos algunas fluctuaciones en la señal. Voy a reiniciar su línea desde aquí, lo que podría ayudar a estabilizar la conexión. Esto tomará un minuto, y podría perder la conexión brevemente. ¿Está de acuerdo?
+
+Cliente: Sí, está bien. Adelante.
+
+Agente: Gracias. He completado el reinicio. Por favor, reinicie también su módem y router manualmente desconectándolos de la corriente durante 30 segundos y luego volviéndolos a conectar. Esto debería ayudar a refrescar la señal.
+
+Cliente: Está bien, lo haré ahora.
+
+Agente: Si después de reiniciar su equipo el problema persiste, le podemos enviar un técnico a su domicilio para revisar la conexión. ¿Le gustaría que programemos una visita si el problema continúa?
+
+Cliente: Esperaré a ver si funciona después del reinicio. Si no mejora, les contactaré nuevamente.
+
+Agente: Perfecto, Juan. Si no ve una mejora, no dude en llamarnos de nuevo para que programemos la visita del técnico. Estamos aquí para ayudarle.
+
+Cliente: Gracias. Espero que se solucione pronto.
+
+Agente: De nada, Juan. Estamos para servirle. ¿Hay algo más en lo que pueda asistirle hoy?
+
+Cliente: No, eso sería todo, genial.
+
+Agente: Gracias por su paciencia. Que tenga un buen día y esperamos que su servicio se estabilice.
+
+Cliente: Gracias, igual para usted. Adiós.
+
+Agente: Adiós, Juan. Que tenga un buen día.
