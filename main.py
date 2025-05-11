@@ -1,5 +1,4 @@
 import os
-import whisper
 
 from tokenizer.afd import TokenizadorAFD
 from tokenizer.analisis import analizar_sentimiento, verificar_protocolo
@@ -19,8 +18,7 @@ def mostrar_menu():
     print("  1. Analizar texto                                    ")
     print("  2. Añadir nueva palabra a la tabla de sentimientos   ")
     print("  3. Eliminar palabra de la tabla de sentimientos      ")
-    print("  4. Convertir audio                                   ")
-    print("  5. Salir                                             ")
+    print("  4. Salir                                             ")
     print("-------------------------------------------------------")
     seleccion = input("Seleccione una opción: ")
     print()
@@ -32,7 +30,7 @@ def reporte(tokenizador, tabla_sentimientos):
     tokenizador.afd.vaciar()
     tokenizador = TokenizadorAFD()
 
-    tabla_sentimientos = cargar_palabras_y_puntajes("palabras_y_puntajes.txt")
+    tabla_sentimientos = cargar_palabras_y_puntajes()
 
     # Preparar los archivos de output
     eliminar_archivo("tabla_lexemas.txt")
@@ -134,7 +132,7 @@ def reporte(tokenizador, tabla_sentimientos):
 
 def main():
     tokenizador = TokenizadorAFD()
-    tabla_sentimientos = cargar_palabras_y_puntajes("palabras_y_puntajes.txt")
+    tabla_sentimientos = cargar_palabras_y_puntajes()
 
     while True:
         opcion = mostrar_menu()
@@ -143,24 +141,21 @@ def main():
             reporte(tokenizador, tabla_sentimientos)
 
         elif opcion == "2":
+            # Generar un nuevo afd
             tokenizador.afd.vaciar()
             agregar_palabra_sentimiento(tabla_sentimientos, tokenizador.afd)
+
+            # Recargar el tokenizador
             tokenizador = TokenizadorAFD()
-            tabla_sentimientos = cargar_palabras_y_puntajes("palabras_y_puntajes.txt")
+            tabla_sentimientos = cargar_palabras_y_puntajes()
 
         elif opcion == "3":
             tokenizador.afd.vaciar()
             eliminar_palabra_sentimiento(tabla_sentimientos)
             tokenizador = TokenizadorAFD()
-            tabla_sentimientos = cargar_palabras_y_puntajes("palabras_y_puntajes.txt")
+            tabla_sentimientos = cargar_palabras_y_puntajes()
 
         elif opcion == "4":
-            model = whisper.load_model("medium")
-            f = input("Ingrese la direccion del archivo a convertir: ")
-            resultado = model.transcribe(f)
-            print(resultado["text"])
-
-        elif opcion == "5":
             print("Saliendo del programa.")
             break
 

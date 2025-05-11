@@ -34,12 +34,13 @@ class AFD:
         if lexema in self.transiciones[estado_actual]:
             estado_actual = self.transiciones[estado_actual][lexema]
 
-            # Registrar la transición usada
+            # NOTE: codigo de debug
+            # Registrar las transiciones usadas y nuevos lexemas
             # if estado_actual not in self.transiciones_usadas:
             #    self.transiciones_usadas[estado_actual] = []
-            # Solo agrega si no está ya en la lista
             # if lexema not in self.transiciones_usadas[estado_actual]:
             #    self.transiciones_usadas[estado_actual].append(lexema)
+
         else:
             return estado_actual, False
 
@@ -173,6 +174,7 @@ class TokenizadorAFD:
                 # Guardar la transición usada
                 if estado not in self.afd.transiciones_usadas:
                     self.afd.transiciones_usadas[estado] = []
+
                 # Agregar lexema aunque sea repetido
                 self.afd.transiciones_usadas[estado].append(lexema)
 
@@ -188,6 +190,7 @@ class TokenizadorAFD:
                 # Guardar el lexema no aceptado
                 self.afd.transiciones_usadas[error_estado].append(lexema)
 
+        # NOTE: codigo de debug
         # print(self.afd.transiciones_usadas)
         return lexemas
 

@@ -2,6 +2,8 @@ import os
 
 from tokenizer.sentimientos import TablaSentimientos
 
+ARCHIVO_PUNTAJES = "palabras_y_puntajes.txt"
+
 
 def eliminar_archivo(nombre_archivo):
     try:
@@ -12,10 +14,12 @@ def eliminar_archivo(nombre_archivo):
         pass
 
 
-def cargar_palabras_y_puntajes(archivo):
+def cargar_palabras_y_puntajes():
     tabla_sentimientos = TablaSentimientos()
     with open(
-        os.path.join("tokenizer", "sentiment_symbols", archivo), "r", encoding="utf-8"
+        os.path.join("tokenizer", "sentiment_symbols", ARCHIVO_PUNTAJES),
+        "r",
+        encoding="utf-8",
     ) as f:
         for linea in f:
             palabra, puntaje = linea.strip().split(",")
@@ -40,7 +44,7 @@ def agregar_palabra_sentimiento(tabla_sentimientos, afd):
 
     # Guardar en el archivo para persistencia
     with open(
-        os.path.join("tokenizer", "sentiment_symbols", "palabras_y_puntajes.txt"),
+        os.path.join("tokenizer", "sentiment_symbols", ARCHIVO_PUNTAJES),
         "a",
         encoding="utf-8",
     ) as f:
@@ -57,14 +61,14 @@ def eliminar_palabra_sentimiento(tabla_sentimientos):
 
     # Leer el archivo y eliminar la palabra
     with open(
-        os.path.join("tokenizer", "sentiment_symbols", "palabras_y_puntajes.txt"),
+        os.path.join("tokenizer", "sentiment_symbols", ARCHIVO_PUNTAJES),
         "r",
         encoding="utf-8",
     ) as f:
         lineas = f.readlines()
 
     with open(
-        os.path.join("tokenizer", "sentiment_symbols", "palabras_y_puntajes.txt"),
+        os.path.join("tokenizer", "sentiment_symbols", ARCHIVO_PUNTAJES),
         "w",
         encoding="utf-8",
     ) as f:
