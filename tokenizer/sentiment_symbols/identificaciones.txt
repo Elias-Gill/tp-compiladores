@@ -1,28 +1,28 @@
-gusto
-hablar
-llamar
-proporcionarme
-nombre
-identidad
-identificación
-con quién
-me indica
-me dice
-me confirma
-puede decirme
-su nombre
-su número
-puedo saber
-tengo el gusto
-cómo se llama
-quién habla
-verificar datos
-datos del titular
-a nombre de quién
-por favor su nombre
-cliente titular
-quién es
-nombre completo
-identificar
-nombre del titular
-titularidad
+gusto,0
+hablar,0
+llamar,0
+proporcionarme,0
+nombre,0
+identidad,0
+identificación,0
+con quién,0
+me indica,0
+me dice,0
+me confirma,0
+puede decirme,0
+su nombre,0
+su número,0
+puedo saber,0
+tengo el gusto,0
+cómo se llama,0
+quién habla,0
+verificar datos,0
+datos del titular,0
+a nombre de quién,0
+por favor su nombre,0
+cliente titular,0
+quién es,0
+nombre completo,0
+identificar,0
+nombre del titular,0
+titularidad,0

@@ -1,24 +1,25 @@
-hola
-buenos días
-buenas tardes
-buenas noches
-buenas
-buenos
-qué tal
-cómo está
-cómo le va
-muy buenas
-un saludo
-le saludo
-buen día
-qué gusto
-bienvenido
-bienvenida
-es un gusto
-es un placer
-encantado de atenderle
-con gusto
-a su servicio
-qué necesita
-en qué puedo ayudarle
-a sus órdenes
+hola,0
+buenos días,0
+buenos dias,0
+buenas tardes,0
+buenas noches,0
+buenas,0
+buenos,0
+qué tal,0
+cómo está,0
+cómo le va,0
+muy buenas,0
+un saludo,0
+le saludo,0
+buen día,0
+qué gusto,0
+bienvenido,0
+bienvenida,0
+es un gusto,0
+es un placer,0
+encantado de atenderle,0
+con gusto,0
+a su servicio,0
+qué necesita,0
+en qué puedo ayudarle,0
+a sus órdenes,0

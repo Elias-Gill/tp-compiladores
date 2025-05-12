@@ -1,166 +1,128 @@
-import os
+#!/usr/bin/env python3
+import sys
+from pathlib import Path
+from tokenizer.sentimientos import TablaSentimientos
+from tokenizer.tokenizador import Tokenizador
+from tokenizer.analisis import analizar_sentimiento  # Asegúrate de importar esta función
 
-from tokenizer.afd import TokenizadorAFD
-from tokenizer.analisis import analizar_sentimiento, verificar_protocolo
-from tokenizer.file_utils import (
-    agregar_palabra_sentimiento,
-    cargar_palabras_y_puntajes,
-    eliminar_archivo,
-    eliminar_palabra_sentimiento,
-)
+def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
+    """Procesa un archivo completo con el tokenizador y realiza análisis de sentimiento"""
+    try:
+        with open(archivo_entrada, 'r', encoding='utf-8') as f:
+            texto = f.read()
+        
+        print(f"\nProcesando archivo: {archivo_entrada.name}")
+        tokens = tokenizador.tokenizar(texto)
+        
+        # Generar archivo de salida
+        archivo_salida = archivo_entrada.parent / f"{archivo_entrada.stem}_tokens.txt"
+        
+        with open(archivo_salida, 'w', encoding='utf-8') as f:
+            for token in tokens:
+                tipo = token.type
+                valor = token.valor
+                
+                if tipo == "PALABRA":
+                    puntaje = tabla_sentimientos.obtener_puntaje(valor)
+                    f.write(f"{valor} (PALABRA: {puntaje})\n")
+                else:
+                    f.write(f"{valor} ({tipo})\n")
+        
+        print(f"✓ Tokenización completada. Resultados en: {archivo_salida}")
+        
+        # Análisis de sentimiento
+        resultado = analizar_sentimiento(tokens, tabla_sentimientos)
+        
+        # Imprimir resultados del análisis de sentimiento
+        print("\n--- Resultados del Análisis de Sentimiento ---")
+        print(f"Puntaje total: {resultado['puntaje_total']}")
+        print(f"¿Hay saludo? {'Sí' if resultado['hay_saludo'] else 'No'}")
+        print(f"¿Hay despedida? {'Sí' if resultado['hay_despedida'] else 'No'}")
+        print(f"¿Hay identificación? {'Sí' if resultado['hay_identificacion'] else 'No'}")
+        print(f"¿Se usaron palabras prohibidas? {'Sí' if resultado['hay_prohibidas'] else 'No'}")
+        
+        if resultado["desconocidas"]:
+            print("\nPalabras desconocidas encontradas:")
+            for palabra in resultado["desconocidas"]:
+                print(f"- {palabra}")
+            
+            print("\nSugerencias de palabras similares:")
+            # TODO: probar
+            # for palabra, sugeridas in resultado["sugerencias"].items():
+            #     print(f"  {palabra} -> {', '.join(sugeridas)}")
+        
+        return True
+    
+    except FileNotFoundError:
+        print(f"✗ Error: Archivo {archivo_entrada} no encontrado.")
+        return False
+    except Exception as e:
+        print(f"✗ Error inesperado al procesar archivo: {e}")
+        return False
 
-
-def mostrar_menu():
-    print()
-    print("-------------------------------------------------------")
-    print("                   --- Menú ---                        ")
-    print("-------------------------------------------------------")
-    print("  1. Analizar texto                                    ")
-    print("  2. Añadir nueva palabra a la tabla de sentimientos   ")
-    print("  3. Eliminar palabra de la tabla de sentimientos      ")
-    print("  4. Salir                                             ")
-    print("-------------------------------------------------------")
-    seleccion = input("Seleccione una opción: ")
-    print()
-
-    return seleccion
-
-
-def reporte(tokenizador, tabla_sentimientos):
-    tokenizador.afd.vaciar()
-    tokenizador = TokenizadorAFD()
-
-    tabla_sentimientos = cargar_palabras_y_puntajes()
-
-    # Preparar los archivos de output
-    eliminar_archivo("tabla_lexemas.txt")
-    eliminar_archivo("afd.json")
-    eliminar_archivo("reporte.txt")
-
-    archivo = input("Ingresa la direccion del archivo de entrada: ")
-
-    if os.path.exists(archivo):
-        with open(archivo, "r", encoding="utf-8") as archivo_texto:
-            texto = archivo_texto.read().replace("\n", " ")
-
-            # Tokenizar el texto y generar la tabla de lexemas
-            lexemas = tokenizador.tokenizador(texto)
-            tabla_lexemas = tokenizador.afd.generar_tabla_lexemas()
-
-            # Guardar la tabla de lexemas
-            with open(
-                os.path.join("output", "tabla_lexemas.txt"), "w", encoding="utf-8"
-            ) as archivo_salida:
-                archivo_salida.write(f"{'Lexema':<20} {'Token':<15} {'Patron'}\n")
-                archivo_salida.write("=" * 50 + "\n")
-                for entrada in tabla_lexemas:
-                    archivo_salida.write(
-                        f"{entrada['Lexema']:<20} {entrada['Token']:<15} {entrada['Patron']}\n"
-                    )
-
-            print("-" * 64)
-            # Análisis de Sentimiento
-            resultado_sentimiento = analizar_sentimiento(
-                lexemas, tabla_sentimientos, tokenizador
-            )
-            print("Detección de sentimientos: ")
-            print(f"Sentimiento general: {resultado_sentimiento['sentimiento']}")
-            print(f"Puntaje total: {resultado_sentimiento['puntaje_total']}")
-            print(f"Palabras positivas: {resultado_sentimiento['palabras_positivas']}")
-            print(f"Palabras negativas: {resultado_sentimiento['palabras_negativas']}")
-
-            # Verificación del Protocolo
-            resultado_protocolo = verificar_protocolo(lexemas, tokenizador)
-            print(f"Verificación del protocolo de Atención (Agente): ")
-            print(
-                f" - Saludo: {'OK' if resultado_protocolo['saludo'] else 'No detectado'}"
-            )
-            print(
-                f" - Identificación: {'OK' if resultado_protocolo['identificacion'] else 'No detectado'}"
-            )
-            print(
-                f" - Despedida: {'OK' if resultado_protocolo['despedida'] else 'No detectado'}"
-            )
-            print(
-                f" - Palabras rudas: {'Detectadas' if resultado_protocolo['palabras_prohibidas'] else 'Ninguna detectada'}"
-            )
-            print("-" * 64)
-
-            # Guardar resultados en archivo de texto
-            output_filename = "reporte.txt"
-            with open(
-                os.path.join("output", output_filename), "w", encoding="utf-8"
-            ) as archivo_salida:
-                archivo_salida.write(
-                    f"Sentimiento general: {resultado_sentimiento['sentimiento']}\n"
-                )
-                archivo_salida.write(
-                    f"Puntaje total: {resultado_sentimiento['puntaje_total']}\n"
-                )
-                archivo_salida.write(
-                    f"Palabras positivas: {resultado_sentimiento['palabras_positivas']}\n"
-                )
-                archivo_salida.write(
-                    f"Palabras negativas: {resultado_sentimiento['palabras_negativas']}\n"
-                )
-                archivo_salida.write(
-                    f"Verificación del protocolo de Atención (Agente):\n"
-                )
-                archivo_salida.write(
-                    f" - Saludo: {'OK' if resultado_protocolo['saludo'] else 'No detectado'}\n"
-                )
-                archivo_salida.write(
-                    f" - Identificación: {'OK' if resultado_protocolo['identificacion'] else 'No detectado'}\n"
-                )
-                archivo_salida.write(
-                    f" - Despedida: {'OK' if resultado_protocolo['despedida'] else 'No detectado'}\n"
-                )
-                archivo_salida.write(
-                    f" - Palabras rudas: {'Detectadas' if resultado_protocolo['palabras_prohibidas'] else 'Ninguna detectada'}\n"
-                )
-
-            print(f"[*] Archivo de salida guardado en: {output_filename}")
-
-            # Guardar el AFD en un archivo JSON solo con transiciones usadas
-            afd_json = "afd.json"
-            tokenizador.afd.guardar_en_json(afd_json)
-            print(f"[*] AFD guardado en: {afd_json}")
-            print("[*] Tabla de lexemas guardada en: tabla_lexemas.txt")
-    else:
-        print(f"El archivo {archivo} no existe.")
-
+def modo_interactivo(tabla_sentimientos, tokenizador):
+    """Modo interactivo para tokenizar texto ingresado por el usuario y realizar análisis de sentimiento"""
+    print("\n--- Modo Interactivo ---")
+    print("Ingrese el texto a tokenizar (escriba 'salir' para terminar):")
+    
+    while True:
+        texto = input("\nTexto: ").strip()
+        
+        if texto.lower() == 'salir':
+            break
+        
+        if not texto:
+            continue
+        
+        tokens = tokenizador.tokenizar(texto)
+        
+        print("\nResultados de tokenización:")
+        for token in tokens:
+            tipo = token.type
+            valor = token.valor
+            puntuacion = token.puntuacion
+            
+            print(f"- {valor} ({tipo}) {puntuacion}")
+        
+        # Análisis de sentimiento
+        resultado = analizar_sentimiento(tokens, tabla_sentimientos)
+        
+        # Imprimir resultados del análisis de sentimiento
+        print("\n--- Resultados del Análisis de Sentimiento ---")
+        print(f"Puntaje total: {resultado['puntaje_total']}")
+        print(f"¿Hay saludo? {'Sí' if resultado['hay_saludo'] else 'No'}")
+        print(f"¿Hay despedida? {'Sí' if resultado['hay_despedida'] else 'No'}")
+        print(f"¿Hay identificación? {'Sí' if resultado['hay_identificacion'] else 'No'}")
+        print(f"¿Se usaron palabras prohibidas? {'Sí' if resultado['hay_prohibidas'] else 'No'}")
+        
+        if resultado["desconocidas"]:
+            print("\nPalabras desconocidas encontradas:")
+            for palabra in resultado["desconocidas"]:
+                print(f"- {palabra}")
+            
+            # TODO:
+            # print("\nSugerencias de palabras similares:")
+            # for palabra, sugeridas in resultado["sugerencias"].items():
+            #     print(f"  {palabra} -> {', '.join(sugeridas)}")
 
 def main():
-    tokenizador = TokenizadorAFD()
-    tabla_sentimientos = cargar_palabras_y_puntajes()
-
-    while True:
-        opcion = mostrar_menu()
-
-        if opcion == "1":
-            reporte(tokenizador, tabla_sentimientos)
-
-        elif opcion == "2":
-            # Generar un nuevo afd
-            tokenizador.afd.vaciar()
-            agregar_palabra_sentimiento(tabla_sentimientos, tokenizador.afd)
-
-            # Recargar el tokenizador
-            tokenizador = TokenizadorAFD()
-            tabla_sentimientos = cargar_palabras_y_puntajes()
-
-        elif opcion == "3":
-            tokenizador.afd.vaciar()
-            eliminar_palabra_sentimiento(tabla_sentimientos)
-            tokenizador = TokenizadorAFD()
-            tabla_sentimientos = cargar_palabras_y_puntajes()
-
-        elif opcion == "4":
-            print("Saliendo del programa.")
-            break
-
-        else:
-            print("Opción no válida. Intente de nuevo.")
+    # Inicializar componentes
+    tabla_sentimientos = TablaSentimientos()
+    tokenizador = Tokenizador(tabla_sentimientos)
+    
+    # Manejo de argumentos
+    if len(sys.argv) > 1:
+        # Modo archivo
+        archivo_entrada = Path(sys.argv[1])
+        if not archivo_entrada.exists():
+            print(f"✗ Error: El archivo {archivo_entrada} no existe.", file=sys.stderr)
+            sys.exit(1)
+            
+        if not procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
+            sys.exit(1)
+    else:
+        # Modo interactivo
+        modo_interactivo(tabla_sentimientos, tokenizador)
 
 
 if __name__ == "__main__":

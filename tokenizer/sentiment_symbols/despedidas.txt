@@ -1,24 +1,23 @@
-gracias
-muchas gracias
-se lo agradezco
-que tenga un buen día
-lindo día
-feliz día
-hasta luego
-hasta pronto
-hasta la próxima
-nos vemos
-adiós
-chau
-chao
-cuidese
-cuídese
-un placer
-estamos en contacto
-quedo atento
-quedamos atentos
-a su disposición
-que esté bien
-que pase bien
-saludos
-cordialmente
+muchas gracias,3
+se lo agradezco,3
+que tenga un buen día,2
+lindo día,2
+feliz día,2
+hasta luego,0
+hasta pronto,1
+hasta la próxima,1
+nos vemos,1
+adiós,0
+chau,0
+chao,0
+cuidese,2
+cuídese,2
+un placer,3
+estamos en contacto,2
+quedo atento,2
+quedamos atentos,2
+a su disposición,2
+que esté bien,2
+que pase bien,2
+saludos,1
+cordialmente,2
