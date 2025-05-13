@@ -1,7 +1,8 @@
 import sys
 from pathlib import Path
 
-from tokenizer.analisis import ResultadoSentimiento, analizar_sentimiento
+from tokenizer.analisis import (ResultadoConversacion, ResultadoParticipante,
+                                analizar_sentimiento)
 from tokenizer.sentimientos import TablaSentimientos
 from tokenizer.tokenizador import Tokenizador
 
@@ -81,34 +82,41 @@ def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
             print(linea)
 
 
-def imprimir_resultados_analisis(resultado: ResultadoSentimiento):
-    """Muestra resultados con colores ANSI"""
-    print(f"\n{BOLD}{CYAN}=== Resultados del Análisis de Sentimiento ==={RESET}")
+def imprimir_resultados_analisis(resultado: ResultadoConversacion):
+    """Muestra resultados con colores ANSI diferenciando cliente/agente"""
 
-    # Determinar color del sentimiento
+    # Función helper para Sí/No coloreado
+    def si_no(cond):
+        return f"{GREEN}Sí{RESET}" if cond else f"{RED}No{RESET}"
+
+    # Función para imprimir sección de participante
+    def imprimir_seccion(nombre, datos):
+        print(f"\n{BOLD}{CYAN}=== {nombre.upper()} ===")
+        print(f"{BOLD}Puntaje:{RESET} {datos.puntaje_total}")
+        print(f"{BOLD}Saludo:{RESET} {si_no(datos.hay_saludo)}")
+        print(f"{BOLD}Despedida:{RESET} {si_no(datos.hay_despedida)}")
+        print(f"{BOLD}Identificación:{RESET} {si_no(datos.hay_identificacion)}")
+        print(f"{BOLD}Palabras prohibidas:{RESET} {si_no(datos.hay_prohibidas)}")
+
+    # Resultado general
+    print(f"\n{BOLD}{MAGENTA}=== RESUMEN GENERAL ===")
+    print(f"{BOLD}{BLUE}Puntaje total:{RESET} {resultado.puntaje_total}")
+    # Determinar mensaje del sentimiento
     if resultado.puntaje_total > 0:
         sen = f"{GREEN}POSITIVO"
     elif resultado.puntaje_total == 0:
         sen = f"{YELLOW}NEUTRAL"
     else:
         sen = f"{RED}NEGATIVO"
+    print(f"{BOLD}{BLUE}Sentimiento: {sen}{RESET} ")
 
-    # Función helper para Sí/No coloreado
-    def si_no(cond):
-        return f"{GREEN}Sí{RESET}" if cond else f"{RED}No{RESET}"
+    # Secciones individuales
+    imprimir_seccion("Cliente", resultado.cliente)
+    imprimir_seccion("Agente", resultado.agente)
 
-    # Imprimir resultados
-    items = [
-        ("Sentimiento final", sen),
-        ("Puntaje total", str(resultado.puntaje_total)),
-        ("¿Hay saludo?", si_no(resultado.hay_saludo)),
-        ("¿Hay despedida?", si_no(resultado.hay_despedida)),
-        ("¿Hay identificación?", si_no(resultado.hay_identificacion)),
-        ("¿Palabras prohibidas?", si_no(resultado.hay_prohibidas)),
-    ]
-
-    for label, value in items:
-        print(f"{BOLD}{BLUE}{label}:{RESET} {value}")
+    # Nota sobre palabras desconocidas (ya fueron mostradas antes)
+    if resultado.cliente.desconocidas or resultado.agente.desconocidas:
+        print(f"\n{YELLOW}Nota: Se ignoraron las palabras desconocidas{RESET}")
 
 
 def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):

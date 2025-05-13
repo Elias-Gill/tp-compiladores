@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from tokenizer.sentimientos import TablaSentimientos
@@ -8,13 +8,21 @@ from tokenizer.tokenizador import (TOKEN_DESCONOCIDO, TOKEN_DESPEDIDA,
 
 
 @dataclass
-class ResultadoSentimiento:
-    puntaje_total: int
-    hay_saludo: bool
-    hay_despedida: bool
-    hay_identificacion: bool
-    hay_prohibidas: bool
-    desconocidas: List[str]
+class ResultadoParticipante:
+    puntaje_total: int = 0
+    hay_saludo: bool = False
+    hay_despedida: bool = False
+    hay_identificacion: bool = False
+    hay_prohibidas: bool = False
+    desconocidas: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ResultadoConversacion:
+    cliente: ResultadoParticipante
+    agente: ResultadoParticipante
+    puntaje_total: int = 0
+    desconocidas_compartidas: List[str] = field(default_factory=list)
 
 
 def manejar_palabra_desconocida(
@@ -77,49 +85,65 @@ def manejar_palabra_desconocida(
 
 def analizar_sentimiento(
     tokens: List[Token], tabla_sentimientos: TablaSentimientos
-) -> ResultadoSentimiento:
-    """Analiza los tokens y calcula el sentimiento general."""
-    resultado = ResultadoSentimiento(
-        puntaje_total=0,
-        hay_saludo=False,
-        hay_despedida=False,
-        hay_identificacion=False,
-        hay_prohibidas=False,
-        desconocidas=[],
+) -> ResultadoConversacion:
+    """Analiza los tokens diferenciando entre cliente y agente."""
+    resultado = ResultadoConversacion(
+        cliente=ResultadoParticipante(), agente=ResultadoParticipante()
     )
-
-    # Primera pasada: recolectar palabras desconocidas y procesar las conocidas
     palabras_desconocidas = []
+    hablante_actual = None  # 'cliente' o 'agente'
 
+    # Primera pasada: procesar tokens conocidos
     for token in tokens:
+        # Determinar hablante actual
+        if token.type == "TOKEN_CLIENTE":
+            hablante_actual = "cliente"
+            continue
+        elif token.type == "TOKEN_AGENTE":
+            hablante_actual = "agente"
+            continue
+
+        # Si no hay hablante definido, saltar este token
+        if not hablante_actual:
+            continue
+
+        # Obtener referencia al participante actual
+        participante = getattr(resultado, hablante_actual)
+
+        # Procesar token según tipo
+        if token.type == TOKEN_PROHIBIDA:
+            participante.hay_prohibidas = True
+        elif token.type == TOKEN_SALUDO:
+            participante.hay_saludo = True
+        elif token.type == TOKEN_DESPEDIDA:
+            participante.hay_despedida = True
+        elif token.type == TOKEN_IDENTIFICACION:
+            participante.hay_identificacion = True
+        elif token.type == TOKEN_DESCONOCIDO:
+            palabras_desconocidas.append((hablante_actual, token.valor))
+
+        # Sumar puntuación siempre
+        participante.puntaje_total += token.puntuacion
         resultado.puntaje_total += token.puntuacion
 
-        if token.type == TOKEN_PROHIBIDA:
-            resultado.hay_prohibidas = True
-        elif token.type == TOKEN_SALUDO:
-            resultado.hay_saludo = True
-        elif token.type == TOKEN_DESPEDIDA:
-            resultado.hay_despedida = True
-        elif token.type == TOKEN_IDENTIFICACION:
-            resultado.hay_identificacion = True
-        elif token.type == TOKEN_DESCONOCIDO:
-            palabras_desconocidas.append(token.valor)
-
-    # Segunda pasada: manejar palabras desconocidas si el usuario quiere corregirlas
+    # Segunda pasada: manejar palabras desconocidas
     if palabras_desconocidas:
         print("\nPalabras desconocidas encontradas:")
-        for i, palabra in enumerate(palabras_desconocidas, 1):
+        for i, (_, palabra) in enumerate(palabras_desconocidas, 1):
             print(f"{i}. {palabra}")
 
         opcion = input("\n¿Desea corregir estas palabras? (s/n): ").strip().lower()
 
         if opcion == "s":
-            for palabra in palabras_desconocidas:
+            for hablante, palabra in palabras_desconocidas:
+                participante = getattr(resultado, hablante)
                 if puntaje := manejar_palabra_desconocida(palabra, tabla_sentimientos):
+                    participante.puntaje_total += puntaje
                     resultado.puntaje_total += puntaje
                 else:
-                    resultado.desconocidas.append(palabra)
+                    participante.desconocidas.append(palabra)
         else:
-            resultado.desconocidas.extend(palabras_desconocidas)
+            for hablante, palabra in palabras_desconocidas:
+                getattr(resultado, hablante).desconocidas.append(palabra)
 
     return resultado
