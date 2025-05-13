@@ -1,10 +1,26 @@
+from dataclasses import dataclass
+from typing import Dict, List
+
 from tokenizer.sentimientos import (TIPO_DESCONOCIDO, TIPO_DESPEDIDA,
                                     TIPO_IDENTIFICACION, TIPO_PROHIBIDA,
-                                    TIPO_SALUDO, TIPO_SENTIMIENTO)
+                                    TIPO_SALUDO, TablaSentimientos)
 from tokenizer.tokenizador import Token
 
 
-def analizar_sentimiento(tokens: list[Token], tabla_sentimientos):
+@dataclass
+class ResultadoSentimiento:
+    puntaje_total: int
+    hay_saludo: bool
+    hay_despedida: bool
+    hay_identificacion: bool
+    hay_prohibidas: bool
+    desconocidas: List[str]
+    sugerencias: Dict[str, List[str]]
+
+
+def analizar_sentimiento(
+    tokens: List[Token], tabla_sentimientos: TablaSentimientos
+) -> ResultadoSentimiento:
     puntaje_total = 0
     hay_saludo = False
     hay_despedida = False
@@ -30,17 +46,17 @@ def analizar_sentimiento(tokens: list[Token], tabla_sentimientos):
         elif tipo == TIPO_DESCONOCIDO:
             desconocidas.append(valor)
 
-    # TODO: hacer algo con palabras desconocidas
-    # sugerencias = {}
-    # for palabra in desconocidas:
-    #     sugerencias[palabra] = tabla_sentimientos.sugerir_similares(palabra)
-
-    return {
-        "puntaje_total": puntaje_total,
-        "hay_saludo": hay_saludo,
-        "hay_despedida": hay_despedida,
-        "hay_identificacion": hay_identificacion,
-        "hay_prohibidas": hay_prohibidas,
-        "desconocidas": desconocidas,
-        # "sugerencias": sugerencias,
+    sugerencias = {
+        palabra: tabla_sentimientos.sugerir_similares(palabra)
+        for palabra in desconocidas
     }
+
+    return ResultadoSentimiento(
+        puntaje_total=puntaje_total,
+        hay_saludo=hay_saludo,
+        hay_despedida=hay_despedida,
+        hay_identificacion=hay_identificacion,
+        hay_prohibidas=hay_prohibidas,
+        desconocidas=desconocidas,
+        sugerencias=sugerencias,
+    )
