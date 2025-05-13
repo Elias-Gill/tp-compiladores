@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import List
 
 from tokenizer.sentimientos import (TIPO_DESCONOCIDO, TIPO_DESPEDIDA,
                                     TIPO_IDENTIFICACION, TIPO_PROHIBIDA,
@@ -15,7 +15,62 @@ class ResultadoSentimiento:
     hay_identificacion: bool
     hay_prohibidas: bool
     desconocidas: List[str]
-    sugerencias: Dict[str, List[str]]
+
+
+def manejar_palabra_desconocida(
+    valor: str, tabla_sentimientos: TablaSentimientos
+) -> int:
+    print(f"\nPalabra desconocida: '{valor}'")
+    sugerencias = tabla_sentimientos.sugerir_similares(valor)
+
+    if sugerencias:
+        print("Sugerencias de palabras similares:")
+        for i, sugerencia in enumerate(sugerencias, 1):
+            print(f"{i}. {sugerencia}")
+    else:
+        print("No se encontraron sugerencias.")
+
+    while True:
+        print("\nOpciones:")
+        print("  [a] Agregar al diccionario")
+        if sugerencias:
+            print("  [c] Corregir usando sugerencia")
+        print("  [i] Ignorar")
+        opcion = input("¿Qué desea hacer con esta palabra? ").strip().lower()
+
+        if opcion == "a":
+            while True:
+                try:
+                    puntaje = int(input(f"Ingrese un puntaje para '{valor}': "))
+                    break
+                except ValueError:
+                    print("Entrada inválida. Ingrese un número entero.")
+            tabla_sentimientos.agregar_palabra(valor, puntaje)
+            return puntaje
+
+        elif opcion == "c" and sugerencias:
+            while True:
+                seleccion = input("Seleccione el número de la sugerencia: ").strip()
+                if seleccion.isdigit():
+                    indice = int(seleccion) - 1
+                    if 0 <= indice < len(sugerencias):
+                        palabra_corregida = sugerencias[indice]
+                        _, puntaje = tabla_sentimientos.buscar_palabra(
+                            palabra_corregida
+                        )
+                        print(
+                            f"✓ Corregido como '{palabra_corregida}' con puntaje {puntaje}"
+                        )
+                        return puntaje
+                    else:
+                        print("Número fuera de rango.")
+                else:
+                    print("Entrada inválida.")
+
+        elif opcion == "i":
+            return 0
+        else:
+            print("Opción no válida. Intente de nuevo.")
 
 
 def analizar_sentimiento(
@@ -44,12 +99,11 @@ def analizar_sentimiento(
         elif tipo == TIPO_IDENTIFICACION:
             hay_identificacion = True
         elif tipo == TIPO_DESCONOCIDO:
-            desconocidas.append(valor)
-
-    sugerencias = {
-        palabra: tabla_sentimientos.sugerir_similares(palabra)
-        for palabra in desconocidas
-    }
+            puntaje_opcional = manejar_palabra_desconocida(valor, tabla_sentimientos)
+            if puntaje_opcional is not None:
+                puntaje_total += puntaje_opcional
+            else:
+                desconocidas.append(valor)
 
     return ResultadoSentimiento(
         puntaje_total=puntaje_total,
@@ -58,5 +112,4 @@ def analizar_sentimiento(
         hay_identificacion=hay_identificacion,
         hay_prohibidas=hay_prohibidas,
         desconocidas=desconocidas,
-        sugerencias=sugerencias,
     )

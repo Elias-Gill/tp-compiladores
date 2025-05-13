@@ -35,15 +35,6 @@ def imprimir_resultados_analisis(resultado: ResultadoSentimiento):
         f"¿Se usaron palabras prohibidas? {'Sí' if resultado.hay_prohibidas else 'No'}"
     )
 
-    if resultado.desconocidas:
-        print("\nPalabras desconocidas encontradas:")
-        for palabra in resultado.desconocidas:
-            print(f"- {palabra}")
-
-        print("\nSugerencias de palabras similares:")
-        for palabra, sugeridas in resultado.sugerencias.items():
-            print(f"  {palabra} -> {', '.join(sugeridas)}")
-
 
 def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
     """Procesa un archivo con el tokenizador y realiza análisis de sentimiento"""
