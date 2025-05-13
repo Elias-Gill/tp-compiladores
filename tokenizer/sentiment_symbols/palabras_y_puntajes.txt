@@ -132,3 +132,8 @@ técnico,0
 respuesta,0
 señal,0
 velocidad,0
+que,0
+hace,0
+como,0
+le,0
+va,0
