@@ -1,11 +1,10 @@
 import sys
 from pathlib import Path
 
-# NOTE: se puede cambiar indistintamente el tokenizador
-from tokenizer.tokenizador import Tokenizador
-# from tokenizer.AFDTokenizador import AFDTokenizador
+from tokenizer.AFDTokenizador import AFDTokenizer
 from tokenizer.analisis import ResultadoConversacion, analizar_sentimiento
 from tokenizer.sentimientos import TablaSentimientos
+from tokenizer.tokenizador import HashTokenizer
 
 # Códigos ANSI para colores
 RESET = "\033[0m"
@@ -84,7 +83,11 @@ def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
 
 
 def imprimir_resultados_analisis(resultado: ResultadoConversacion):
-    """Muestra resultados con colores ANSI diferenciando cliente/agente"""
+    """Muestra resultados con colores ANSI diferenciando cliente/agente y escribe en archivo"""
+    
+    # Crear directorio output si no existe
+    import os
+    os.makedirs('output', exist_ok=True)
 
     # Función helper para Sí/No coloreado
     def si_no(cond):
@@ -93,19 +96,58 @@ def imprimir_resultados_analisis(resultado: ResultadoConversacion):
     def no_si(cond):
         return f"{RED}Sí{RESET}" if cond else f"{GREEN}No{RESET}"
 
-    # Función para imprimir sección de participante
-    def imprimir_seccion(nombre, datos):
-        print(f"\n{BOLD}{CYAN}=== {nombre.upper()} ===")
-        print(f"{BOLD}Puntaje:{RESET} {datos.puntaje_total}")
-        print(f"{BOLD}Saludo:{RESET} {si_no(datos.hay_saludo)}")
-        print(f"{BOLD}Despedida:{RESET} {si_no(datos.hay_despedida)}")
-        print(f"{BOLD}Identificación:{RESET} {si_no(datos.hay_identificacion)}")
-        print(f"{BOLD}Palabras prohibidas:{RESET} {no_si(datos.hay_prohibidas)}")
+    # Función para generar contenido de sección (reutilizable para archivo y consola)
+    def generar_seccion(nombre, datos, usar_colores=True):
+        lines = []
+        prefix = ""
+        suffix = ""
+        
+        if usar_colores:
+            prefix = BOLD + CYAN
+            suffix = RESET
+        
+        lines.append(f"\n{prefix}=== {nombre.upper()} ==={suffix if usar_colores else ''}")
+        lines.append(f"{BOLD if usar_colores else ''}Puntaje:{RESET if usar_colores else ''} {datos.puntaje_total}")
+        lines.append(f"{BOLD if usar_colores else ''}Saludo:{RESET if usar_colores else ''} {si_no(datos.hay_saludo) if usar_colores else ('Sí' if datos.hay_saludo else 'No')}")
+        lines.append(f"{BOLD if usar_colores else ''}Despedida:{RESET if usar_colores else ''} {si_no(datos.hay_despedida) if usar_colores else ('Sí' if datos.hay_despedida else 'No')}")
+        lines.append(f"{BOLD if usar_colores else ''}Identificación:{RESET if usar_colores else ''} {si_no(datos.hay_identificacion) if usar_colores else ('Sí' if datos.hay_identificacion else 'No')}")
+        lines.append(f"{BOLD if usar_colores else ''}Palabras prohibidas:{RESET if usar_colores else ''} {no_si(datos.hay_prohibidas) if usar_colores else ('Sí' if datos.hay_prohibidas else 'No')}")
+        
+        return "\n".join(lines)
 
-    # Resultado general
+    # Generar contenido para archivo (sin colores)
+    contenido_archivo = []
+    
+    # Resultado general para archivo
+    contenido_archivo.append("\n=== RESUMEN GENERAL ===")
+    contenido_archivo.append(f"Puntaje total: {resultado.puntaje_total}")
+    
+    # Determinar mensaje del sentimiento para archivo
+    if resultado.puntaje_total > 0:
+        sen = "POSITIVO"
+    elif resultado.puntaje_total == 0:
+        sen = "NEUTRAL"
+    else:
+        sen = "NEGATIVO"
+    contenido_archivo.append(f"Sentimiento: {sen}")
+
+    # Secciones individuales para archivo
+    contenido_archivo.append(generar_seccion("Cliente", resultado.cliente, usar_colores=False))
+    contenido_archivo.append(generar_seccion("Agente", resultado.agente, usar_colores=False))
+
+    # Nota sobre palabras desconocidas para archivo
+    if resultado.cliente.desconocidas or resultado.agente.desconocidas:
+        contenido_archivo.append("\nNota: Se ignoraron las palabras desconocidas")
+
+    # Escribir en archivo
+    with open('output/reporte.txt', 'w', encoding='utf-8') as f:
+        f.write("\n".join(contenido_archivo))
+
+    # Mostrar en consola (con colores)
     print(f"\n{BOLD}{MAGENTA}=== RESUMEN GENERAL ===")
     print(f"{BOLD}{BLUE}Puntaje total:{RESET} {resultado.puntaje_total}")
-    # Determinar mensaje del sentimiento
+    
+    # Determinar mensaje del sentimiento para consola
     if resultado.puntaje_total > 0:
         sen = f"{GREEN}POSITIVO"
     elif resultado.puntaje_total == 0:
@@ -114,11 +156,11 @@ def imprimir_resultados_analisis(resultado: ResultadoConversacion):
         sen = f"{RED}NEGATIVO"
     print(f"{BOLD}{BLUE}Sentimiento: {sen}{RESET} ")
 
-    # Secciones individuales
-    imprimir_seccion("Cliente", resultado.cliente)
-    imprimir_seccion("Agente", resultado.agente)
+    # Secciones individuales para consola
+    print(generar_seccion("Cliente", resultado.cliente))
+    print(generar_seccion("Agente", resultado.agente))
 
-    # Nota sobre palabras desconocidas (ya fueron mostradas antes)
+    # Nota sobre palabras desconocidas para consola
     if resultado.cliente.desconocidas or resultado.agente.desconocidas:
         print(f"\n{YELLOW}Nota: Se ignoraron las palabras desconocidas{RESET}")
 
@@ -212,7 +254,14 @@ def modo_interactivo(tabla_sentimientos, tokenizador):
 
 def main():
     tabla_sentimientos = TablaSentimientos()
-    tokenizador = Tokenizador(tabla_sentimientos)
+
+    # Verificar si se pasó la flag --hashmap
+    if "--hashmap" in sys.argv:
+        tokenizador = HashTokenizer(tabla_sentimientos)
+        sys.argv.remove("--hashmap")  # eliminar para que no interfiera
+    else:
+        # Por defecto se usa el tokenizador con AFD
+        tokenizador = AFDTokenizer(tabla_sentimientos)
 
     if len(sys.argv) > 1:
         archivo_entrada = Path(sys.argv[1])

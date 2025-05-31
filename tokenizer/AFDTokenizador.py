@@ -1,26 +1,28 @@
+import json
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from tokenizer.sentimientos import (
-    TIPO_DESPEDIDA,
-    TIPO_IDENTIFICACION,
-    TIPO_PROHIBIDA,
-    TIPO_SALUDO,
-    TIPO_SENTIMIENTO,
-    TablaSentimientos,
-)
-from tokenizer.tokenizador import (
-    TOKEN_AGENTE,
-    TOKEN_CLIENTE,
-    TOKEN_SIGNO_PUNTUACION,
-    Token,
-    asignar_tipo,
-)
+from tokenizer.sentimientos import (TIPO_DESPEDIDA, TIPO_IDENTIFICACION,
+                                    TIPO_PROHIBIDA, TIPO_SALUDO,
+                                    TIPO_SENTIMIENTO, TablaSentimientos)
+from tokenizer.tokenizador import (TOKEN_AGENTE, TOKEN_CLIENTE,
+                                   TOKEN_SIGNO_PUNTUACION, Token, asignar_tipo)
 
 
-class AFDTokenizador:
+class AFDTokenizer:
     def __init__(self, tabla_sentimientos: TablaSentimientos):
         self.tabla = tabla_sentimientos
         self._build_afd_completo()
+        self._persistir_afd()
+
+    def _persistir_afd(self):
+        """Guarda el AFD en un archivo JSON en la carpeta output"""
+        output_dir = Path("output")
+        output_dir.mkdir(exist_ok=True)
+
+        afd_file = output_dir / "afd.json"
+        with open(afd_file, "w", encoding="utf-8") as f:
+            json.dump(self.afd, f, indent=2, ensure_ascii=False)
 
     def _build_afd_completo(self):
         self.afd = {
@@ -102,7 +104,13 @@ class AFDTokenizador:
 
     def _preprocesar_hablantes(self, texto: str) -> str:
         import re
-        return re.sub(r"\b(agente|cliente):", lambda m: f" {m.group(0)} ", texto, flags=re.IGNORECASE)
+
+        return re.sub(
+            r"\b(agente|cliente):",
+            lambda m: f" {m.group(0)} ",
+            texto,
+            flags=re.IGNORECASE,
+        )
 
     def _es_signo_puntuacion(self, char: str) -> bool:
         return not (char.isalnum() or char.isspace() or char in "'-_áéíóúüñ")

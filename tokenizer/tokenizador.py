@@ -37,7 +37,7 @@ class Token:
         return f"Token(type='{self.type}', valor='{self.valor}', puntuacion={self.puntuacion})"
 
 
-class Tokenizador:
+class HashTokenizer:
     def __init__(self, tabla_sentimientos: TablaSentimientos):
         self.tabla = tabla_sentimientos
         self._hablante_re = re.compile(r"\b(agente|cliente):", re.IGNORECASE)
