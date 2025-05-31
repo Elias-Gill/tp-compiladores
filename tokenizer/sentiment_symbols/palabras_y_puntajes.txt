@@ -137,3 +137,6 @@ hace,0
 como,0
 le,0
 va,0
+pero,0
+ha,0
+pasado,0

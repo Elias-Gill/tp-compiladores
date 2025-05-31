@@ -1,156 +1,158 @@
-from collections import defaultdict
+from typing import Dict, List, Optional, Tuple
 
-from tokenizer.sentimientos import TablaSentimientos
+from tokenizer.sentimientos import (
+    TIPO_DESPEDIDA,
+    TIPO_IDENTIFICACION,
+    TIPO_PROHIBIDA,
+    TIPO_SALUDO,
+    TIPO_SENTIMIENTO,
+    TablaSentimientos,
+)
+from tokenizer.tokenizador import (
+    TOKEN_AGENTE,
+    TOKEN_CLIENTE,
+    TOKEN_SIGNO_PUNTUACION,
+    Token,
+    asignar_tipo,
+)
 
 
 class AFDTokenizador:
     def __init__(self, tabla_sentimientos: TablaSentimientos):
         self.tabla = tabla_sentimientos
-        self.estado_inicial = 0
-        self.estado_counter = 1  # Comienza desde 1 porque 0 es el inicial
-        self.estados_finales = {}  # {estado: (tipo, valor, *args)}
-        self.transiciones = defaultdict(dict)  # {estado: {caracter: nuevo_estado}}
-        self.estado_desconocido = -1
-        self._construir_afd()
+        self._build_afd_completo()
 
-    def _nuevo_estado(self):
-        estado = self.estado_counter
-        self.estado_counter += 1
-        return estado
+    def _build_afd_completo(self):
+        self.afd = {
+            "initial": "start",
+            "states": {
+                "start": {"transitions": {}, "is_final": False, "token_type": None}
+            },
+        }
 
-    def _construir_afd(self):
-        for palabra in self.tabla.palabras:
-            self._agregar_palabra_afd(palabra, "PALABRA")
+        self._cargar_frases_al_afd(self.tabla.palabras, TIPO_SENTIMIENTO)
+        self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
+        self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
+        self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
+        self._cargar_frases_al_afd(self.tabla.palabras_prohibidas, TIPO_PROHIBIDA)
 
-        for categoria, frases in [
-            ("SALUDO", self.tabla.saludos),
-            ("DESPEDIDA", self.tabla.despedidas),
-            ("IDENTIFICACION", self.tabla.identificaciones),
-        ]:
-            for frase in frases:
-                self._agregar_frase_afd(frase, categoria)
+    def _cargar_frases_al_afd(self, frases_dict: Dict[str, int], tipo: str):
+        for frase in frases_dict.keys():
+            chars = list(frase.lower())
+            current_state = "start"
 
-        for palabra in self.tabla.palabras_prohibidas:
-            self._agregar_palabra_afd(palabra, "PROHIBIDA")
+            for i, char in enumerate(chars):
+                next_state = f"{current_state}_{char}_{tipo}"
 
-    def _agregar_palabra_afd(self, palabra, tipo):
-        estado_actual = self.estado_inicial
-        for i, char in enumerate(palabra.lower()):
-            if char not in self.transiciones[estado_actual]:
-                nuevo_estado = self._nuevo_estado()
-                self.transiciones[estado_actual][char] = nuevo_estado
-                estado_actual = nuevo_estado
-            else:
-                estado_actual = self.transiciones[estado_actual][char]
-        extra = (self.tabla.palabras[palabra],) if tipo == "PALABRA" else ()
-        self.estados_finales[estado_actual] = (tipo, palabra, *extra)
+                is_final = i == len(chars) - 1
+                token_type = tipo if is_final else None
+                puntuacion = frases_dict[frase] if is_final else 0
 
-    def _agregar_frase_afd(self, frase, tipo):
-        estado_actual = self.estado_inicial
-        for i, char in enumerate(frase.lower()):
-            char_key = " " if char == " " else char
-            if char_key not in self.transiciones[estado_actual]:
-                nuevo_estado = self._nuevo_estado()
-                self.transiciones[estado_actual][char_key] = nuevo_estado
-                estado_actual = nuevo_estado
-            else:
-                estado_actual = self.transiciones[estado_actual][char_key]
-        self.estados_finales[estado_actual] = (tipo, frase)
+                if next_state not in self.afd["states"]:
+                    self.afd["states"][next_state] = {
+                        "transitions": {},
+                        "is_final": is_final,
+                        "token_type": token_type,
+                        "puntuacion": puntuacion,
+                    }
 
-    def tokenizar(self, texto, manejar_desconocidos=None):
+                if char not in self.afd["states"][current_state]["transitions"]:
+                    self.afd["states"][current_state]["transitions"][char] = []
+                self.afd["states"][current_state]["transitions"][char].append(
+                    next_state
+                )
+
+                current_state = next_state
+
+    def tokenizar(self, texto: str) -> List[Token]:
         tokens = []
         i = 0
         n = len(texto)
-        signos_puntuacion = {
-            ",",
-            ".",
-            ";",
-            ":",
-            "!",
-            "?",
-            "¿",
-            "¡",
-            "(",
-            ")",
-            "[",
-            "]",
-            "{",
-            "}",
-        }
-        espacios = {" ", "\t", "\n", "\r"}
+
+        texto = self._preprocesar_hablantes(texto)
 
         while i < n:
-            estado = self.estado_inicial
-            buffer = []
-            ultimo_estado_final = None
-            buffer_final = []
-            pos_final = i
+            if texto[i].isspace():
+                i += 1
+                continue
 
-            j = i
-            while j < n:
-                char = texto[j].lower()
-                char_key = " " if char in espacios else char
+            if self._es_signo_puntuacion(texto[i]):
+                tokens.append(Token(TOKEN_SIGNO_PUNTUACION, texto[i]))
+                i += 1
+                continue
 
-                if char in signos_puntuacion and not buffer:
-                    tokens.append(("SIGNO_PUNTUACION", char))
-                    j += 1
-                    break
+            hablante_token = self._procesar_hablante(texto, i)
+            if hablante_token:
+                tokens.append(hablante_token)
+                i += len(hablante_token.valor)
+                continue
 
-                if char_key in self.transiciones[estado]:
-                    estado = self.transiciones[estado][char_key]
-                    buffer.append(texto[j])
-                    if estado in self.estados_finales:
-                        ultimo_estado_final = estado
-                        buffer_final = buffer.copy()
-                        pos_final = j + 1
-                    j += 1
-                else:
-                    j += 1  # seguimos intentando, no cortamos aún
-                    break  # rompe el while, luego se usa lo último válido
-
-            if ultimo_estado_final is not None:
-                self._procesar_buffer(
-                    tokens, buffer_final, ultimo_estado_final, manejar_desconocidos
-                )
-                i = pos_final
-            else:
-                if texto[i] not in espacios:
-                    buffer = []
-                    while (
-                        i < n
-                        and texto[i] not in signos_puntuacion
-                        and texto[i] not in espacios
-                    ):
-                        buffer.append(texto[i])
-                        i += 1
-                    self._procesar_buffer(
-                        tokens, buffer, self.estado_desconocido, manejar_desconocidos
-                    )
-                else:
-                    i += 1  # Saltar espacio
+            token, delta = self._tokenizar_con_afd(texto, i)
+            tokens.append(token)
+            i += delta
 
         return tokens
 
-    def _procesar_buffer(self, tokens, buffer, estado, manejar_desconocidos=None):
-        if not buffer:
-            return
-        token_texto = "".join(buffer)
-        if estado in self.estados_finales:
-            tipo, valor, *extra = self.estados_finales[estado]
-            if tipo in {"SALUDO", "DESPEDIDA", "IDENTIFICACION"}:
-                token_texto = " ".join(token_texto.split())
-            tokens.append((tipo, token_texto, *extra))
-        else:
-            if manejar_desconocidos:
-                resultado = manejar_desconocidos(token_texto, self.tabla, self)
-                if resultado:
-                    accion, datos = resultado
-                    if accion == "agregada":
-                        tokens.append(("PALABRA", datos["palabra"], datos["puntaje"]))
-                    elif accion == "reemplazada":
-                        tokens.append(("PALABRA", datos["reemplazo"], datos["puntaje"]))
-            else:
-                tokens.append(("DESCONOCIDO", token_texto))
+    def _procesar_hablante(self, texto: str, start: int) -> Optional[Token]:
+        if texto[start:].lower().startswith("agente:"):
+            return Token(TOKEN_AGENTE, "agente:")
+        elif texto[start:].lower().startswith("cliente:"):
+            return Token(TOKEN_CLIENTE, "cliente:")
+        return None
 
-    def reset(self):
-        self.estado_actual = self.estado_inicial
+    def _preprocesar_hablantes(self, texto: str) -> str:
+        import re
+        return re.sub(r"\b(agente|cliente):", lambda m: f" {m.group(0)} ", texto, flags=re.IGNORECASE)
+
+    def _es_signo_puntuacion(self, char: str) -> bool:
+        return not (char.isalnum() or char.isspace() or char in "'-_áéíóúüñ")
+
+    def _tokenizar_con_afd(self, texto: str, start: int) -> Tuple[Token, int]:
+        best_token = None
+        best_length = 0
+        current_states = [("start", "", 0)]
+
+        i = start
+        while i < len(texto) and current_states:
+            char = texto[i].lower()
+            new_states = []
+
+            for state, acc, total_length in current_states:
+                if char in self.afd["states"][state]["transitions"]:
+                    for next_state in self.afd["states"][state]["transitions"][char]:
+                        new_acc = acc + texto[i]
+                        new_length = total_length + 1
+
+                        if self.afd["states"][next_state]["is_final"]:
+                            token_type = self.afd["states"][next_state]["token_type"]
+                            puntuacion = self.afd["states"][next_state]["puntuacion"]
+
+                            if new_length > best_length:
+                                best_token = Token(
+                                    asignar_tipo(token_type), new_acc, puntuacion
+                                )
+                                best_length = new_length
+
+                        new_states.append((next_state, new_acc, new_length))
+
+            current_states = new_states
+            i += 1
+
+        if best_token:
+            return best_token, best_length
+
+        return self._tokenizar_palabra_simple(texto, start)
+
+    def _tokenizar_palabra_simple(self, texto: str, start: int) -> Tuple[Token, int]:
+        i = start
+        n = len(texto)
+
+        while i < n and (texto[i].isalnum() or texto[i] in "'-_áéíóúüñ"):
+            i += 1
+
+        if i == start:
+            return Token("DESCONOCIDO", texto[start]), 1
+
+        palabra = texto[start:i].lower()
+        tipo, puntuacion = self.tabla.buscar_palabra(palabra)
+        return Token(asignar_tipo(tipo), palabra, puntuacion), i - start

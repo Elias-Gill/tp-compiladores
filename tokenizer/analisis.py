@@ -91,7 +91,7 @@ def analizar_sentimiento(
         cliente=ResultadoParticipante(), agente=ResultadoParticipante()
     )
     palabras_desconocidas = []
-    hablante_actual = None  # 'cliente' o 'agente'
+    hablante_actual = "agente"  # 'cliente' o 'agente'
 
     # Primera pasada: procesar tokens conocidos
     for token in tokens:

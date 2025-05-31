@@ -1,10 +1,11 @@
 import sys
 from pathlib import Path
 
-from tokenizer.analisis import (ResultadoConversacion, ResultadoParticipante,
-                                analizar_sentimiento)
+# NOTE: se puede cambiar indistintamente el tokenizador
+# from tokenizer.Tokenizador import Tokenizador
+from tokenizer.AFDTokenizador import AFDTokenizador
+from tokenizer.analisis import ResultadoConversacion, analizar_sentimiento
 from tokenizer.sentimientos import TablaSentimientos
-from tokenizer.tokenizador import Tokenizador
 
 # Códigos ANSI para colores
 RESET = "\033[0m"
@@ -208,7 +209,7 @@ def modo_interactivo(tabla_sentimientos, tokenizador):
 
 def main():
     tabla_sentimientos = TablaSentimientos()
-    tokenizador = Tokenizador(tabla_sentimientos)
+    tokenizador = AFDTokenizador(tabla_sentimientos)
 
     if len(sys.argv) > 1:
         archivo_entrada = Path(sys.argv[1])
