@@ -107,3 +107,20 @@ percepción emocional de los textos procesados.
 En un mundo donde la interacción humana y la comunicación son cada vez más mediadas por la
 tecnología, herramientas como esta son esenciales para mejorar la comprensión y la respuesta a
 las necesidades de los usuarios.
+
+## Diferencias entres AFD y usar hasmap
+
+Por ejemplo la frase: "En qué puedo ayudarle" es facilmente reconocible por el AFD, pero para
+la implementacion con hashmap se requeriria ampliar el buffer, esto es facilmente solventable
+tambien haciendo que el tamano del buffer varie automaticamente para hacer que el buffer sea
+del tamano de la frase mas larga, esto en el proceso de instanciamiento.
+
+```txt
+         Frase                   TOKEN
+AFD:     En qué puedo ayudarle   TOKEN_SALUDO   
+
+HASH:    en                      TOKEN_DESCONOCIO
+         qué                     TOKEN_DESCONOCIO
+         puedo                   TOKEN_DESCONOCIO
+         ayudarle                TOKEN_SENTIMIENTO
+```

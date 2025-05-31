@@ -2,8 +2,8 @@ import sys
 from pathlib import Path
 
 # NOTE: se puede cambiar indistintamente el tokenizador
-# from tokenizer.Tokenizador import Tokenizador
-from tokenizer.AFDTokenizador import AFDTokenizador
+from tokenizer.tokenizador import Tokenizador
+# from tokenizer.AFDTokenizador import AFDTokenizador
 from tokenizer.analisis import ResultadoConversacion, analizar_sentimiento
 from tokenizer.sentimientos import TablaSentimientos
 
@@ -90,6 +90,9 @@ def imprimir_resultados_analisis(resultado: ResultadoConversacion):
     def si_no(cond):
         return f"{GREEN}Sí{RESET}" if cond else f"{RED}No{RESET}"
 
+    def no_si(cond):
+        return f"{RED}Sí{RESET}" if cond else f"{GREEN}No{RESET}"
+
     # Función para imprimir sección de participante
     def imprimir_seccion(nombre, datos):
         print(f"\n{BOLD}{CYAN}=== {nombre.upper()} ===")
@@ -97,7 +100,7 @@ def imprimir_resultados_analisis(resultado: ResultadoConversacion):
         print(f"{BOLD}Saludo:{RESET} {si_no(datos.hay_saludo)}")
         print(f"{BOLD}Despedida:{RESET} {si_no(datos.hay_despedida)}")
         print(f"{BOLD}Identificación:{RESET} {si_no(datos.hay_identificacion)}")
-        print(f"{BOLD}Palabras prohibidas:{RESET} {si_no(datos.hay_prohibidas)}")
+        print(f"{BOLD}Palabras prohibidas:{RESET} {no_si(datos.hay_prohibidas)}")
 
     # Resultado general
     print(f"\n{BOLD}{MAGENTA}=== RESUMEN GENERAL ===")
@@ -209,7 +212,7 @@ def modo_interactivo(tabla_sentimientos, tokenizador):
 
 def main():
     tabla_sentimientos = TablaSentimientos()
-    tokenizador = AFDTokenizador(tabla_sentimientos)
+    tokenizador = Tokenizador(tabla_sentimientos)
 
     if len(sys.argv) > 1:
         archivo_entrada = Path(sys.argv[1])

@@ -11,7 +11,9 @@ Cliente:
 ¡Juan Pérez! Mi número de cuenta es 12345678. Y no es la primera vez que doy esa información. Parece que cada vez que les hablo, tengo que repetir lo mismo y no pasa nada. Esto es una pérdida de tiempo.
 
 Agente:
-Entiendo, Juan, y créame que quiero solucionar este problema lo más rápido posible para usted. Estoy revisando su cuenta en este momento... (pausa) Veo que tiene un plan de 100 Mbps, pero también noto que ha reportado problemas similares en el pasado. Permítame hacer una prueba de línea para ver si detectamos alguna irregularidad.             
+Entiendo, Juan, y créame que quiero solucionar este problema lo más rápido posible para usted. Estoy revisando su cuenta en
+este momento... (pausa) Veo que tiene un plan de 100 Mbps, pero también noto que ha reportado problemas similares en el
+pasado. Permítame hacer una prueba de línea para ver si detectamos alguna irregularidad.             
                                                   
 Cliente:
 ¡Ya me hicieron esas pruebas un montón de veces! ¡Siempre lo mismo! ¿Por qué no envían a un técnico de una vez?

@@ -1,4 +1,5 @@
 gusto,0
+soy,0
 hablar,0
 llamar,0
 proporcionarme,0
