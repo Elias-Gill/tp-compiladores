@@ -28,59 +28,56 @@ class ResultadoConversacion:
 def manejar_palabra_desconocida(
     valor: str, tabla_sentimientos: TablaSentimientos
 ) -> int:
-    """Maneja palabras desconocidas mostrando sugerencias y opciones al usuario."""
+    """Muestra un menú ordenado para manejar una palabra desconocida."""
+
     print(f"\nPalabra desconocida: '{valor}'")
-    sugerencias = tabla_sentimientos.sugerir_similares(valor)
-
-    if sugerencias:
-        print("Sugerencias de palabras similares:")
-        for i, sugerencia in enumerate(sugerencias, 1):
-            print(f"{i}. {sugerencia}")
-
-    opciones = "\nOpciones:\n  [a] Agregar al diccionario\n"
-    if sugerencias:
-        opciones += "  [c] Corregir usando sugerencia\n"
-    opciones += "  [i] Ignorar"
 
     while True:
-        opcion = (
-            input(f"{opciones}\n¿Qué desea hacer con esta palabra? ").strip().lower()
-        )
+        print("Opciones:")
+        print("  [a] Agregar palabra manualmente")
+        print("  [c] Corregir usando una sugerencia")
+        print("  [i] Ignorar palabra")
+        opcion = input("Seleccione una opción: ").strip().lower()
 
         if opcion == "a":
-            while True:
-                try:
-                    puntaje = int(input(f"Ingrese un puntaje para '{valor}': "))
-                    tabla_sentimientos.agregar_palabra(valor, puntaje)
-                    return puntaje
-                except ValueError:
-                    print("Entrada inválida. Ingrese un número entero.")
+            try:
+                puntaje = int(input(f"Ingrese puntaje para '{valor}': "))
+                tabla_sentimientos.agregar_palabra(valor, puntaje)
+                print(f"✓ Palabra '{valor}' agregada con puntaje {puntaje}")
+                return puntaje
+            except ValueError:
+                print("✗ Entrada inválida. Ingrese un número entero.")
 
-        elif opcion == "c" and sugerencias:
-            while True:
-                seleccion = input("Seleccione el número de la sugerencia: ").strip()
-                if seleccion.isdigit() and 0 <= (indice := int(seleccion) - 1) < len(
-                    sugerencias
-                ):
-                    palabra_corregida = sugerencias[indice]
-                    _, puntaje = tabla_sentimientos.buscar_palabra(palabra_corregida)
-                    print(
-                        f"✓ Corregido como '{palabra_corregida}' con puntaje {puntaje}"
-                    )
+        elif opcion == "c":
+            sugerencias = tabla_sentimientos.sugerir_similares(valor)
+            if not sugerencias:
+                print("✗ No se encontraron sugerencias.")
+                continue
+
+            print("\nSugerencias:")
+            for i, s in enumerate(sugerencias, 1):
+                puntaje = tabla_sentimientos.buscar_palabra(s)[1]
+                print(f"  {i}. {s} (puntaje: {puntaje})")
+
+            seleccion = input("Seleccione el número de la sugerencia: ").strip()
+            if seleccion.isdigit():
+                idx = int(seleccion) - 1
+                if 0 <= idx < len(sugerencias):
+                    corregida = sugerencias[idx]
+                    _, puntaje = tabla_sentimientos.buscar_palabra(corregida)
+                    print(f"✓ Usando '{corregida}' con puntaje {puntaje}")
                     return puntaje
-                print(
-                    "Número fuera de rango."
-                    if seleccion.isdigit()
-                    else "Entrada inválida."
-                )
+                else:
+                    print("✗ Número fuera de rango.")
+            else:
+                print("✗ Entrada inválida.")
 
         elif opcion == "i":
+            print("✓ Palabra ignorada.")
             return 0
-        print(
-            "Opción no válida. Intente de nuevo."
-            if opcion not in ["a", "c", "i"]
-            else ""
-        )
+
+        else:
+            print("✗ Opción no válida.")
 
 
 def analizar_sentimiento(

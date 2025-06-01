@@ -140,3 +140,6 @@ va,0
 pero,0
 ha,0
 pasado,0
+sos,0
+un,0
+gracias,1

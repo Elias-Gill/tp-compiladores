@@ -1,3 +1,9 @@
+"""
+Dentro de este archivo se encuentra todo el codigo para realizar los reportes y manejar el cli.
+En su mayoria es codigo irrelevante para el objetivo principal, que es el analisis de
+sentimiento y especialmente el proceso de tokenizacion.
+"""
+
 import sys
 from pathlib import Path
 
@@ -20,6 +26,10 @@ WHITE = "\033[37m"
 OUTPUT_PATH = Path("output")
 
 
+def aplicar_color(texto, color, usar_color):
+    return f"{color}{texto}{RESET}" if usar_color else texto
+
+
 def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
     """Imprime los tokens en formato de tabla con opción de colores.
 
@@ -29,177 +39,139 @@ def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
         archivo: Opcional, archivo de salida (sin colores)
         color: Si es True, usa colores ANSI (solo en consola)
     """
-    # Configurar formatos según el modo
-    if archivo or not color:
-        RESET = BOLD = RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = ""
-    else:
-        RESET = "\033[0m"
-        BOLD = "\033[1m"
-        MAGENTA = "\033[35m"
-        CYAN = "\033[36m"
-        YELLOW = "\033[33m"
+    usar_color = color and archivo is None
 
-    # Determinar el ancho de columnas
+    # Anchos de columnas
     max_valor = max(len(token.valor) for token in tokens) if tokens else 10
     max_tipo = max(len(token.type) for token in tokens) if tokens else 10
-    max_punt = 7  # Para "Puntaje"
+    max_punt = 7  # "Puntaje"
 
-    # Encabezado de la tabla
+    # Encabezado
     encabezado = (
-        f"{BOLD}{'Valor':<{max_valor}}  {'Tipo':<{max_tipo}}  "
-        f"{'Puntaje' if tabla_sentimientos else '':<{max_punt}}{RESET}"
+        f"{aplicar_color('Valor', BOLD, usar_color):<{max_valor}}  "
+        f"{aplicar_color('Tipo', BOLD, usar_color):<{max_tipo}}  "
+        f"{aplicar_color('Puntaje', BOLD, usar_color) if tabla_sentimientos else ''}"
     )
 
-    # Imprimir en archivo o consola
-    if archivo:
-        archivo.write(encabezado + "\n")
-        archivo.write("-" * (max_valor + max_tipo + max_punt + 4) + "\n")
-    else:
-        print(encabezado)
-        print("-" * (max_valor + max_tipo + max_punt + 4))
+    linea_sep = "-" * (
+        max_valor + max_tipo + (max_punt if tabla_sentimientos else 0) + 4
+    )
 
-    # Imprimir cada token
+    out = archivo.write if archivo else print
+    out(encabezado)
+    out(linea_sep)
+
+    # Cuerpo
     for token in tokens:
         valor = token.valor
         tipo = token.type
-        puntuacion = getattr(token, "puntuacion", None)
-
-        # Formatear puntuación si existe tabla de sentimientos
-        punt_str = ""
-        if tabla_sentimientos and puntuacion is not None:
-            punt_str = f"{puntuacion:>{max_punt}}"
-
-        # Construir línea
-        linea = (
-            f"{MAGENTA}{valor:<{max_valor}}{RESET}  "
-            f"{CYAN}{tipo:<{max_tipo}}{RESET}  "
-            f"{YELLOW if color else ''}{punt_str}{RESET}"
-        ).strip()
+        puntuacion = getattr(token, "puntuacion", "")
+        punt_str = f"{puntuacion:>{max_punt}}" if tabla_sentimientos else ""
 
         if archivo:
-            archivo.write(f"{valor:<{max_valor}}  {tipo:<{max_tipo}}  {punt_str}\n")
+            out(f"{valor:<{max_valor}}  {tipo:<{max_tipo}}  {punt_str}")
         else:
-            print(linea)
+            out(
+                f"{aplicar_color(valor, MAGENTA, usar_color):<{max_valor}}  "
+                f"{aplicar_color(tipo, CYAN, usar_color):<{max_tipo}}  "
+                f"{aplicar_color(punt_str, YELLOW, usar_color)}"
+            )
+
+
+def si_no(cond, invertido=False, usar_colores=True):
+    if not usar_colores:
+        return "Sí" if cond else "No"
+    color = GREEN if cond != invertido else RED
+    return f"{color}Sí{RESET}" if cond else f"{color}No{RESET}"
+
+
+def generar_seccion(nombre, datos, usar_colores=True):
+    bold = BOLD if usar_colores else ""
+    reset = RESET if usar_colores else ""
+    header = f"\n{bold + CYAN if usar_colores else ''}=== {nombre.upper()} ==={reset}"
+    return "\n".join(
+        [
+            header,
+            f"{bold}Puntaje:{reset} {datos.puntaje_total}",
+            f"{bold}Saludo:{reset} {si_no(datos.hay_saludo, usar_colores=usar_colores)}",
+            f"{bold}Despedida:{reset} {si_no(datos.hay_despedida, usar_colores=usar_colores)}",
+            f"{bold}Identificación:{reset} {si_no(datos.hay_identificacion, usar_colores=usar_colores)}",
+            f"{bold}Palabras prohibidas:{reset} {si_no(datos.hay_prohibidas, invertido=True, usar_colores=usar_colores)}",
+        ]
+    )
+
+
+def obtener_sentimiento(puntaje, usar_colores=True):
+    if usar_colores:
+        if puntaje > 0:
+            return f"{GREEN}POSITIVO{RESET}"
+        elif puntaje < 0:
+            return f"{RED}NEGATIVO{RESET}"
+        return f"{YELLOW}NEUTRAL{RESET}"
+    return "POSITIVO" if puntaje > 0 else "NEGATIVO" if puntaje < 0 else "NEUTRAL"
 
 
 def imprimir_resultados_analisis(resultado: ResultadoConversacion):
-    """Muestra resultados con colores ANSI diferenciando cliente/agente y escribe en archivo"""
-    
-    # Crear directorio output si no existe
-    import os
-    os.makedirs('output', exist_ok=True)
+    OUTPUT_PATH.mkdir(exist_ok=True)
+    # Archivo sin colores
+    with open(OUTPUT_PATH / "reporte.txt", "w", encoding="utf-8") as f:
+        f.write(
+            "\n".join(
+                [
+                    "=== RESUMEN GENERAL ===",
+                    f"Puntaje total: {resultado.puntaje_total}",
+                    f"Sentimiento: {obtener_sentimiento(resultado.puntaje_total, usar_colores=False)}",
+                    generar_seccion("Cliente", resultado.cliente, usar_colores=False),
+                    generar_seccion("Agente", resultado.agente, usar_colores=False),
+                    (
+                        "\nNota: Se ignoraron las palabras desconocidas"
+                        if resultado.cliente.desconocidas
+                        or resultado.agente.desconocidas
+                        else ""
+                    ),
+                ]
+            )
+        )
 
-    # Función helper para Sí/No coloreado
-    def si_no(cond):
-        return f"{GREEN}Sí{RESET}" if cond else f"{RED}No{RESET}"
-
-    def no_si(cond):
-        return f"{RED}Sí{RESET}" if cond else f"{GREEN}No{RESET}"
-
-    # Función para generar contenido de sección (reutilizable para archivo y consola)
-    def generar_seccion(nombre, datos, usar_colores=True):
-        lines = []
-        prefix = ""
-        suffix = ""
-        
-        if usar_colores:
-            prefix = BOLD + CYAN
-            suffix = RESET
-        
-        lines.append(f"\n{prefix}=== {nombre.upper()} ==={suffix if usar_colores else ''}")
-        lines.append(f"{BOLD if usar_colores else ''}Puntaje:{RESET if usar_colores else ''} {datos.puntaje_total}")
-        lines.append(f"{BOLD if usar_colores else ''}Saludo:{RESET if usar_colores else ''} {si_no(datos.hay_saludo) if usar_colores else ('Sí' if datos.hay_saludo else 'No')}")
-        lines.append(f"{BOLD if usar_colores else ''}Despedida:{RESET if usar_colores else ''} {si_no(datos.hay_despedida) if usar_colores else ('Sí' if datos.hay_despedida else 'No')}")
-        lines.append(f"{BOLD if usar_colores else ''}Identificación:{RESET if usar_colores else ''} {si_no(datos.hay_identificacion) if usar_colores else ('Sí' if datos.hay_identificacion else 'No')}")
-        lines.append(f"{BOLD if usar_colores else ''}Palabras prohibidas:{RESET if usar_colores else ''} {no_si(datos.hay_prohibidas) if usar_colores else ('Sí' if datos.hay_prohibidas else 'No')}")
-        
-        return "\n".join(lines)
-
-    # Generar contenido para archivo (sin colores)
-    contenido_archivo = []
-    
-    # Resultado general para archivo
-    contenido_archivo.append("\n=== RESUMEN GENERAL ===")
-    contenido_archivo.append(f"Puntaje total: {resultado.puntaje_total}")
-    
-    # Determinar mensaje del sentimiento para archivo
-    if resultado.puntaje_total > 0:
-        sen = "POSITIVO"
-    elif resultado.puntaje_total == 0:
-        sen = "NEUTRAL"
-    else:
-        sen = "NEGATIVO"
-    contenido_archivo.append(f"Sentimiento: {sen}")
-
-    # Secciones individuales para archivo
-    contenido_archivo.append(generar_seccion("Cliente", resultado.cliente, usar_colores=False))
-    contenido_archivo.append(generar_seccion("Agente", resultado.agente, usar_colores=False))
-
-    # Nota sobre palabras desconocidas para archivo
-    if resultado.cliente.desconocidas or resultado.agente.desconocidas:
-        contenido_archivo.append("\nNota: Se ignoraron las palabras desconocidas")
-
-    # Escribir en archivo
-    with open('output/reporte.txt', 'w', encoding='utf-8') as f:
-        f.write("\n".join(contenido_archivo))
-
-    # Mostrar en consola (con colores)
+    # Consola con colores
     print(f"\n{BOLD}{MAGENTA}=== RESUMEN GENERAL ===")
     print(f"{BOLD}{BLUE}Puntaje total:{RESET} {resultado.puntaje_total}")
-    
-    # Determinar mensaje del sentimiento para consola
-    if resultado.puntaje_total > 0:
-        sen = f"{GREEN}POSITIVO"
-    elif resultado.puntaje_total == 0:
-        sen = f"{YELLOW}NEUTRAL"
-    else:
-        sen = f"{RED}NEGATIVO"
-    print(f"{BOLD}{BLUE}Sentimiento: {sen}{RESET} ")
-
-    # Secciones individuales para consola
+    print(
+        f"{BOLD}{BLUE}Sentimiento:{RESET} {obtener_sentimiento(resultado.puntaje_total)}"
+    )
     print(generar_seccion("Cliente", resultado.cliente))
     print(generar_seccion("Agente", resultado.agente))
-
-    # Nota sobre palabras desconocidas para consola
     if resultado.cliente.desconocidas or resultado.agente.desconocidas:
         print(f"\n{YELLOW}Nota: Se ignoraron las palabras desconocidas{RESET}")
 
 
 def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
     try:
-        # 1. Lectura del archivo de entrada
         try:
-            with open(archivo_entrada, "r", encoding="utf-8") as f:
-                texto = f.read()
+            texto = Path(archivo_entrada).read_text(encoding="utf-8")
         except FileNotFoundError:
             print(
-                f"{RED}✗ Error: Archivo de entrada {archivo_entrada} no encontrado.{RESET}",
+                f"{RED}✗ Error: {archivo_entrada} no encontrado.{RESET}",
                 file=sys.stderr,
             )
             return False
         except PermissionError:
             print(
-                f"{RED}✗ Error: Sin permisos para leer {archivo_entrada}{RESET}",
+                f"{RED}✗ Error: Sin permisos para leer {archivo_entrada}.{RESET}",
                 file=sys.stderr,
             )
             return False
 
-        print(f"\n{BOLD}{BLUE}Procesando:{RESET} {archivo_entrada.name}")
+        print(f"\n{BOLD}{BLUE}Procesando:{RESET} {archivo_entrada}")
 
-        # 2. Tokenización
         tokens = tokenizador.tokenizar(texto)
 
-        # 3. Preparar directorio de salida
         try:
             OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            print(
-                f"{RED}✗ Error al crear directorio de salida {OUTPUT_PATH}: {e}{RESET}",
-                file=sys.stderr,
-            )
+            print(f"{RED}✗ Error al crear {OUTPUT_PATH}: {e}{RESET}", file=sys.stderr)
             return False
 
-        # 4. Escritura de resultados
         archivo_salida = OUTPUT_PATH / "tokens.txt"
         try:
             with open(archivo_salida, "w", encoding="utf-8") as f:
@@ -215,7 +187,6 @@ def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
             f"{GREEN}✓ Tokenización completada. Resultados en: {archivo_salida}{RESET}"
         )
 
-        # 5. Análisis de sentimientos
         try:
             resultado = analizar_sentimiento(tokens, tabla_sentimientos)
             imprimir_resultados_analisis(resultado)
@@ -224,18 +195,15 @@ def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
                 f"{YELLOW}⚠ Advertencia: Error en análisis de sentimientos: {e}{RESET}",
                 file=sys.stderr,
             )
-            # Consideramos esto como éxito parcial
-            return True
+            return True  # éxito parcial
 
         return True
-
     except Exception as e:
         print(f"{RED}✗ Error inesperado: {e}{RESET}", file=sys.stderr)
         return False
 
 
 def modo_interactivo(tabla_sentimientos, tokenizador):
-    """Modo interactivo con colores ANSI"""
     print(f"\n{BOLD}{CYAN}=== Modo Interactivo ==={RESET}")
     print(f"Ingrese texto a analizar (escriba {YELLOW}salir{RESET} para terminar):")
 
@@ -245,7 +213,6 @@ def modo_interactivo(tabla_sentimientos, tokenizador):
             break
         if not texto:
             continue
-
         tokens = tokenizador.tokenizar(texto)
         print(f"\n{BOLD}{BLUE}Tokens encontrados:{RESET}")
         imprimir_tokens(tokens)
@@ -254,28 +221,21 @@ def modo_interactivo(tabla_sentimientos, tokenizador):
 
 def main():
     tabla_sentimientos = TablaSentimientos()
-
-    # Verificar si se pasó la flag --hashmap
-    if "--hashmap" in sys.argv:
+    usar_hashmap = "--hashmap" in sys.argv
+    if usar_hashmap:
         tokenizador = HashTokenizer(tabla_sentimientos)
-        sys.argv.remove("--hashmap")  # eliminar para que no interfiera
+        sys.argv.remove("--hashmap")
     else:
-        # Por defecto se usa el tokenizador con AFD
         tokenizador = AFDTokenizer(tabla_sentimientos)
 
     if len(sys.argv) > 1:
-        archivo_entrada = Path(sys.argv[1])
-        if not archivo_entrada.exists():
+        archivo = Path(sys.argv[1])
+        if not archivo.exists():
             print(
-                f"{RED}✗ Error: El archivo {archivo_entrada} no existe.{RESET}",
-                file=sys.stderr,
+                f"{RED}✗ Error: El archivo {archivo} no existe.{RESET}", file=sys.stderr
             )
             sys.exit(1)
-        sys.exit(
-            0
-            if procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos)
-            else 1
-        )
+        sys.exit(0 if procesar_archivo(archivo, tokenizador, tabla_sentimientos) else 1)
     else:
         modo_interactivo(tabla_sentimientos, tokenizador)
 
