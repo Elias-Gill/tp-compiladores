@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from tokenizer.sentimientos import TablaSentimientos
-from tokenizer.tokenizador import (TOKEN_DESCONOCIDO, TOKEN_DESPEDIDA,
+from tokenizer.TablaSentimientos import TablaSentimientos
+from tokenizer.tokens import (TOKEN_DESCONOCIDO, TOKEN_DESPEDIDA,
                                    TOKEN_IDENTIFICACION, TOKEN_PROHIBIDA,
                                    TOKEN_SALUDO, Token)
 

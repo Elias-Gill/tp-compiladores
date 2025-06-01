@@ -7,10 +7,10 @@ sentimiento y especialmente el proceso de tokenizacion.
 import sys
 from pathlib import Path
 
-from tokenizer.AFDTokenizador import AFDTokenizer
+from tokenizer.AFDTokenizer import AFDTokenizer
 from tokenizer.analisis import ResultadoConversacion, analizar_sentimiento
-from tokenizer.sentimientos import TablaSentimientos
-from tokenizer.tokenizador import HashTokenizer
+from tokenizer.HashTokenizer import HashTokenizer
+from tokenizer.TablaSentimientos import TablaSentimientos
 
 # Códigos ANSI para colores
 RESET = "\033[0m"

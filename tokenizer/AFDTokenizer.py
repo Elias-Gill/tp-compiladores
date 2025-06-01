@@ -2,11 +2,11 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from tokenizer.sentimientos import (TIPO_DESPEDIDA, TIPO_IDENTIFICACION,
-                                    TIPO_PROHIBIDA, TIPO_SALUDO,
-                                    TIPO_SENTIMIENTO, TablaSentimientos)
-from tokenizer.tokenizador import (TOKEN_AGENTE, TOKEN_CLIENTE,
-                                   TOKEN_SIGNO_PUNTUACION, Token, asignar_tipo)
+from tokenizer.TablaSentimientos import (TIPO_DESPEDIDA, TIPO_IDENTIFICACION,
+                                         TIPO_PROHIBIDA, TIPO_SALUDO,
+                                         TIPO_SENTIMIENTO, TablaSentimientos)
+from tokenizer.tokens import (TOKEN_AGENTE, TOKEN_CLIENTE,
+                              TOKEN_SIGNO_PUNTUACION, Token, asignar_tipo)
 
 
 class AFDTokenizer:
