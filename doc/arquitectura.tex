@@ -1,3 +1,101 @@
 \section{Arquitectura}
+
+El sistema cuenta con los siguientes modulos:
+
+\begin{itemize}
+    \item Tabla de sentimientos
+    \item Tokenizador
+    \item Analizador de sentimientos
+    \item Reportes (menu principal)
+\end{itemize}
+
 \subsection{Descripcion del algoritmo}
-\subsection{Decisiones tomadas}
+
+\subsection{Tabla de simbolos}
+\subsection{Tokenizador}
+\subsection{Analizador de sentimientos}
+\subsection{Reportes}
+
+\subsection{Decisiones clave}
+
+\subsubsection{Tipos de tokens}
+Los tipos de tokens identificados por el tokenizador seran:
+- TOKEN_SALUDO: frase o palabra perteneciente al saludo
+- TOKEN_DESPEDIDA: frase o palabra perteneciente a la despedida
+- TOKEN_IDENTIFICACION: token que simboliza la identificacion de alguna de las partes
+- TOKEN_PROHIBIDA: mala palabra o frase grosera
+- TOKEN_SENTIMIENTO: palabra suelta que lleva un sentimiento asociado
+- TOKEN_DESCONOCIDO: palabra no registrada en la tabla de sentimientos
+- TOKEN_AGENTE: token especial que indica el cambio de hablante en la conversacion
+- TOKEN_CLIENTE: token especial que indica el cambio de hablante en la conversacion
+- TOKEN_SIGNO_PUNTUACION: token especial que simboliza un signo de puntuacion
+
+\subsubsection{Deteccion de frases}
+
+Como parte del programa, tomamos el reto de poder identificar no solo palabras sueltas, sino
+tambien frases cortas como "buenos dias", esto a fin de facilitar el proceso de identificacion
+de los protocolos de saludo, identificacion y demas. Por tanto, ambas implementaciones tambien
+deberan poder solucionar ambiguedades como "buenos"(sentimiento) y "buenos dias"(saludo).
+
+Esto tambien nos da un mejor panorama sobre como afecta el mecanismo para tokenizar escogido en
+el proceso de tokenzacion.
+
+\subsubsection{API de la tabla de sentimientos}
+
+Esta tabla guarda en diccionarios separados los distintos tipos de frases (saludos,
+sentimeintos, etc). Tambien con algunas funciones de conveniencia, de la cual la mas importante
+es \textbf{\textit{buscar_palabra()}}, la cual es utilizada especialmente por el tokenizador de
+tipo hashmap. Esta funcion ganarantiza de que se priorizan los tipos de frases y palabras en el
+siguiente orden:
+
+if palabra in self.saludos:
+if palabra in self.despedidas:
+if palabra in self.identificaciones:
+if palabra in self.palabras_prohibidas:
+if palabra in self.palabras:
+return (TIPO_DESCONOCIDO, 0)
+
+Por tanto cuando dos palabras estan repetidas en la tabla de sentimientos entonces, se da
+prioridad a los demas tipos de tokens antes que al token de sentimiento.
+
+\subsubsection{Tipo de tokenizador}
+Dado el tiempo de sobra que nos resto, decidimos realizado tos tipos de tokenizadores. Uno
+basado en AFD y otro basado en hashmaps.
+
+Ambas implementaciones implementan una simple interfaz, la cual cuenta con el metodo
+\textbf{\textit{tokenizar()}}. Esta funcion devuelve una lista con los tokens parceados.
+
+Se barajo la posibilidad de realizar la tokenizacion con un metodo
+\textbf{\textit{next_token()}}, pero para mantener la simplicidad, se opto por simplemente
+retornar la lista con todos los tokens.
+
+Ambos tokenizadores son facilmente intercambiables, por lo cual se pueden realizar pruebas y
+comparar las caracteristicas de ambos tokenizadores por separado. Asi tambien podemos
+determinar cual es mas conveniente en cuanto a facilidad de mantenimiento, extension,
+implementacion y rendimiento.
+
+\subsubsection{Solucion de ambiguedades}
+
+Para el tokenizador basado en hashmap, se cuenta con un buffer de hasta 3 palabras para poder
+dar prioridad a las frases mas largas, luego si no se encuentra se prueba con 2 y con 1
+palabra.
+
+En el caso del AFD utilizamos el algoritmo de "largest", es decir, mientras se continua hasta
+que el resultado caiga en un nuevo token, pues cargando el AFD. Ademas, de ese modo se da
+prioridad a las frases, ademas, la misma logica anteior que con la tabla de hash se aplica, el
+orden de carga del afd es el siguiente:
+
+        self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
+        self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
+        self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
+        self._cargar_frases_al_afd(self.tabla.palabras_prohibidas, TIPO_PROHIBIDA)
+        self._cargar_frases_al_afd(self.tabla.palabras, TIPO_SENTIMIENTO)
+
+asi que si hay palabras repetidas, se tomara como la palabra "canon" a aquellas diferentes del
+tipo sentimiento.
+
+% FIX: preguntar a chatgpt como funciona ese algoritmo
+
+%TODO: ahi debe tambien ir lo de que cuando cargas la tabla de simbolos, se toma como 
+% la palabra canon el archivo de "palabras_sentimiento" por tanto si se repiten palabras en
+% los otros archivos seran sobrecargadas.

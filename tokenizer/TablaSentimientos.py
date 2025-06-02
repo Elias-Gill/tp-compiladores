@@ -45,8 +45,6 @@ class TablaSentimientos:
 
     def buscar_palabra(self, palabra):
         palabra = palabra.lower().strip()
-        if palabra in self.palabras:
-            return (TIPO_SENTIMIENTO, self.palabras[palabra])
         if palabra in self.saludos:
             return (TIPO_SALUDO, self.saludos[palabra])
         if palabra in self.despedidas:
@@ -55,6 +53,8 @@ class TablaSentimientos:
             return (TIPO_IDENTIFICACION, self.identificaciones[palabra])
         if palabra in self.palabras_prohibidas:
             return (TIPO_PROHIBIDA, self.palabras_prohibidas[palabra])
+        if palabra in self.palabras:
+            return (TIPO_SENTIMIENTO, self.palabras[palabra])
         return (TIPO_DESCONOCIDO, 0)
 
     def _cargar_archivo_comun(self, archivo: Path, destino: dict):

@@ -12,11 +12,13 @@ class HashTokenizer:
         self._palabras_re = re.compile(r"\w+|[^\w\s]", re.UNICODE)
 
     def tokenizar(self, texto: str) -> list[Token]:
-        tokens = []
+        # extraer los hablantes del texto
         texto = self._hablante_re.sub(lambda m: f" {m.group(0)} ", texto)
         palabras = self._palabras_re.findall(texto.lower())
         i = 0
 
+        # tokenizar
+        tokens = []
         while i < len(palabras):
             # Manejo de agente/cliente
             if i + 1 < len(palabras) and palabras[i + 1] == ":":
