@@ -11,26 +11,26 @@ interés, lo que permite al AFD aceptar o rechazar lexemas basándose en las pal
 encuentran en el texto analizado.
 
 \begin{figure}[h]
-    \centering
-    \begin{tikzpicture}[
-        shorten >=1pt,
-        node distance=2.5cm,
-        on grid,
-        auto
-    ]
-        \node[state, initial] (q0) {start};
-        \node[state] (q1) [right=of q0] {$q_1$};
-        \node[state] (q2) [right=of q1] {$q_2$};
-        \node[state] (q3) [right=of q2] {$q_3$};
-        \node[state, accepting] (q4) [right=of q3] {$q_4$};
+	\centering
+	\begin{tikzpicture}[
+			shorten >=1pt,
+			node distance=2.5cm,
+			on grid,
+			auto
+		]
+		\node[state, initial] (q0) {start};
+		\node[state] (q1) [right=of q0] {$q_1$};
+		\node[state] (q2) [right=of q1] {$q_2$};
+		\node[state] (q3) [right=of q2] {$q_3$};
+		\node[state, accepting] (q4) [right=of q3] {$q_4$};
 
-        \path[->]
-        (q0) edge node {h} (q1)
-        (q1) edge node {o} (q2)
-        (q2) edge node {l} (q3)
-        (q3) edge node {a} (q4);
-    \end{tikzpicture}
-    \caption{Transiciones para la frase "hola" tipo SALUDO}
+		\path[->]
+		(q0) edge node {h} (q1)
+		(q1) edge node {o} (q2)
+		(q2) edge node {l} (q3)
+		(q3) edge node {a} (q4);
+	\end{tikzpicture}
+	\caption{Transiciones para la frase "hola" tipo SALUDO}
 \end{figure}
 
 
@@ -80,4 +80,16 @@ identificadores de lexemas. Un contador permite llevar el registro de cuántas v
 reconocido las palabras de cada categoría. La tabla de sentimientos utiliza una lista enlazada
 donde es posible agregar o eliminar palabras y ponderaciones mediante el menú del sistema.
 
+\subsubsection{Definición de Estados y Transiciones}
+
+Se definieron múltiples estados finales en el AFD, cada uno asociado a distintas categorías de
+palabras: saludos, identificaciones, despedidas, palabras prohibidas, palabras positivas y
+palabras negativas. Esta organización estructurada permite un análisis claro y eficiente de las
+interacciones con los clientes. Las palabras correspondientes a cada categoría se cargan
+previamente desde archivos de texto, listos para su uso en el análisis.
+
+Las transiciones del autómata se implementaron para reconocer un conjunto específico de
+palabras, seleccionadas cuidadosamente para representar las categorías relevantes dentro del
+contexto de atención al cliente y la verificación del protocolo que debe seguir el agente en
+diversas situaciones.
 

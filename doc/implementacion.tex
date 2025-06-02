@@ -1,0 +1,70 @@
+\section{Implementacion}
+
+\subsection{Arquitectura}
+% TODO: agregar una descripcion de las clases principales
+El sistema está estructurado de la siguiente manera:
+
+\begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
+\begin{verbatim}
++-- audios
+|   +-- audio-texto.py
+|   +-- prueba-texto1-negativo.m4a
+|   +-- prueba-texto2-positivo.m4a
++-- data
+|   +-- despedidas.txt
+|   +-- identificaciones.txt
+|   +-- palabras_prohibidas.txt
+|   +-- palabras_y_puntajes.txt
+|   +-- saludos.txt
+|
++-- doc
+|   +-- ensayo.pdf
+|
++-- models
+|   +-- afd.py
+|   +-- analisis.py
+|   +-- file_utils.py
+|   +-- menu.py
+|   +-- sentimientos.py
+|   +-- __init__.py
+|
++-- output
+|   +-- afd.json
+|   +-- reporte.txt
+|   +-- tabla_lexemas.txt
+|
++-- test
+|    +-- prueba-texto1-negativo.txt
+|    +-- prueba-texto2-positivo.txt
+|    +-- prueba-texto3-positivo.txt
+|    +-- prueba-texto4-neutral.txt
+|    +-- prueba.txt
+|
+|- tokenizador.py
+|- README.md
+
+\end{verbatim}
+\end{tcolorbox}
+
+\subsection{Tokenizacion}
+\subsubsection{Tokenizador AFD}
+\subsubsection{Tokenizador Hashmap}
+
+\subsection{Correccion de tokens desconocidos}
+
+\subsection{Analisis de sentimiento y protocolo de atención}
+
+\subsection{Generacion de informes}
+
+\subsubsection{Tabla de Sentimientos}
+Se diseñó una tabla de sentimientos que asigna puntajes específicos a palabras según su
+connotación, lo cual permite un análisis más detallado y preciso de las emociones expresadas en
+las interacciones. Estos datos, pre-cargados desde un archivo de texto para garantizar su
+persistencia, incluyen la flexibilidad de agregar o eliminar palabras según se requiera,
+    facilitando así la personalización y actualización continua del análisis de sentimiento.
+
+    \newpage
+
+    \subsection*{Notas Importantes}
+    El código maneja los resultados de análisis de sentimientos y verificación de protocolo tanto
+    en la consola como en archivos de texto para su revisión.

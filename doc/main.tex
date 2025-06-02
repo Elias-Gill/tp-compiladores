@@ -1,0 +1,80 @@
+\documentclass[12pt,a4paper]{article}
+
+% \usepackage[spanish, es-tabla]{babel}
+
+% Fuentes y estilos
+\usepackage[utf8]{inputenc}
+\usepackage[version=3]{mhchem}
+\usepackage[journal=jacs]{chemstyle}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage[left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+
+%Formato del títulos
+\usepackage{titlesec}
+\usepackage{enumitem}
+\titleformat*{\section}{\bfseries\large}
+\titleformat*{\subsection}{\bfseries\normalsize}
+
+%%%% Entorno código - No usado de momento
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{verbatim}
+
+%%% Grafos
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows}
+
+%% Algoritmos 
+\usepackage{algorithm}
+\usepackage{algorithmic} 
+
+% Imágenes
+\usepackage{graphicx}
+\usepackage{lmodern}
+
+% Pies de pagina y referencias
+\usepackage[stable]{footmisc}
+\usepackage[section]{placeins}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black]{hyperref}
+
+\begin{document}
+%------------------------ Fin del preambulo -------------------------------
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           CARATULA               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{titlepage}
+	\input{caratula}
+\end{titlepage}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             Indice               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      Inicio del documento        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Secciones del documento --- 
+
+\input{introduccion} % y resumen
+\input{arquitectura}
+\input{implementacion}
+\input{resultados}
+\input{conclusion}
+
+% Seccion de anexos
+\section*{Anexos}
+El codigo fuente de este proyecto puede ser encontrado en: 
+\href{https://github.com/elias-gill/tp-compiladores}{https://github.com/elias-gill/tp-compiladores}
+
+\end{document}

@@ -1,5 +1,5 @@
 # Configuración
-MAIN = informe
+MAIN = main
 OUT_DIR = out
 
 # Compilación principal
@@ -26,7 +26,7 @@ compile:
 
 # Mover el PDF al directorio raíz (opcional)
 move_pdf:
-	cp $(OUT_DIR)/$(MAIN).pdf .
+	cp $(OUT_DIR)/$(MAIN).pdf ./informe.pdf
 
 # Limpiar archivos temporales
 clean:
