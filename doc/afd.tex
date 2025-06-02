@@ -1,0 +1,83 @@
+El algoritmo implementado es un sistema de análisis de interacciones en contact centers que
+utiliza técnicas de tokenización y análisis de sentimientos. A continuación se detallan los
+componentes y el funcionamiento del algoritmo:
+
+\subsubsection{Autómata Finito Determinista (AFD)}
+El AFD es la estructura central que permite la clasificación de las palabras en diferentes
+categorías como saludos, identificaciones, despedidas, palabras positivas, negativas y
+prohibidas. Se inicia con un estado inicial (q0) y tiene varios estados finales que
+corresponden a las categorías mencionadas. Las transiciones se definen para cada palabra de
+interés, lo que permite al AFD aceptar o rechazar lexemas basándose en las palabras que se
+encuentran en el texto analizado.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[
+        shorten >=1pt,
+        node distance=2.5cm,
+        on grid,
+        auto
+    ]
+        \node[state, initial] (q0) {start};
+        \node[state] (q1) [right=of q0] {$q_1$};
+        \node[state] (q2) [right=of q1] {$q_2$};
+        \node[state] (q3) [right=of q2] {$q_3$};
+        \node[state, accepting] (q4) [right=of q3] {$q_4$};
+
+        \path[->]
+        (q0) edge node {h} (q1)
+        (q1) edge node {o} (q2)
+        (q2) edge node {l} (q3)
+        (q3) edge node {a} (q4);
+    \end{tikzpicture}
+    \caption{Transiciones para la frase "hola" tipo SALUDO}
+\end{figure}
+
+
+El \textbf{AFD} (Autómata Finito Determinista) implementado en este proyecto tiene como
+objetivo reconocer frases o palabras clave dentro de un texto, asignando un \textit{token} con
+tipo semántico (saludo, despedida, etc.) y puntuación según una tabla predefinida. Este
+autómata no está construido manualmente, sino que se genera dinámicamente a partir de listas de
+palabras/frases, agrupadas por tipo.
+
+\subsubsection{Construcción del AFD}
+
+Para cada palabra o frase $\omega = c_1 c_2 \ldots c_n$ asociada a un tipo $T$:
+\begin{enumerate}
+	\item Se comienza desde el estado inicial $q_0$.
+	\item Por cada caracter $c_i$ se crea un estado nuevo (si no existe) y una transición desde el estado actual.
+	\item El último estado creado $q_n$ se marca como \textit{final}, y se le asigna el tipo de token $T$ y el puntaje de la frase.
+\end{enumerate}
+
+Así, frases distintas que comparten prefijos (por ejemplo, \texttt{"buen"} y \texttt{"buenos
+	días"}) comparten transiciones, optimizando el tamaño del autómata.
+
+Una vez construido, el AFD se guarda como un archivo \texttt{afd.json}, permitiendo depuración
+y visualización externa.
+
+\subsubsection{Reconocimiento de tokens}
+
+Para tokenizar un texto:
+\begin{enumerate}
+	\item Se itera carácter por carácter desde la posición actual $i$ del texto.
+	\item Se mantienen múltiples rutas activas en paralelo (cada una con estado actual, acumulador de caracteres y longitud).
+	\item Cuando una ruta alcanza un estado final, se guarda como el mejor token candidato hasta el momento.
+	\item Si se encuentra un token más largo, se reemplaza el candidato anterior.
+	\item Al terminar el recorrido, si se detectó un token válido, se retorna. Si no, se interpreta como una palabra genérica.
+\end{enumerate}
+
+\subsubsection{Características adicionales}
+
+\begin{itemize}
+	\item El autómata diferencia hablantes mediante tokens como \texttt{agente:} o \texttt{cliente:}.
+	\item Se identifican signos de puntuación como tokens individuales.
+	\item Si una palabra no es reconocida por el AFD, se busca en la tabla de sentimientos como palabra suelta.
+\end{itemize}
+
+\subsection{Estructura de Datos}
+El AFD tiene un diccionario para almacenar las transiciones entre estados y otro para los
+identificadores de lexemas. Un contador permite llevar el registro de cuántas veces se han
+reconocido las palabras de cada categoría. La tabla de sentimientos utiliza una lista enlazada
+donde es posible agregar o eliminar palabras y ponderaciones mediante el menú del sistema.
+
+

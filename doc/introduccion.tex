@@ -1,0 +1,43 @@
+\section*{\centering Resumen}
+Este trabajo presenta un sistema para el análisis de interacciones en contact centers
+utilizando técnicas de Speech Analytics y tokenización. El objetivo es procesar el texto
+derivado de las transcripciones de audio, clasificando las palabras en categorías como saludos,
+despedidas, identificaciones, palabras prohibidas, palabras positivas y palabras negativas, así
+como realizar un análisis de sentimientos basado en esas palabras. El sistema utiliza un
+autómata finito determinista (AFD) para identificar los lexemas y estructurar el flujo de
+interacción. Además, el AFD permite detectar y verificar el cumplimiento de un protocolo
+estándar de atención por parte del agente. Finalmente, se presentan y analizan los resultados
+obtenidos del procesamiento de textos simulados, destacando las conclusiones sobre la
+efectividad del sistema en la mejora de la calidad de atención al cliente.
+
+\section{Introducción}
+El propósito de este trabajo práctico es implementar un sistema que procese las interacciones
+comunes en un centro de contacto (contact center) y que, utilizando técnicas de tokenización y
+análisis léxico, permita evaluar la calidad de la atención brindada por los agentes. El
+objetivo final es identificar el sentimiento de las conversaciones y verificar si el protocolo
+de atención al cliente ha sido seguido correctamente.
+
+El sistema desarrollado se centra en la clasificación léxica de las palabras en categorías
+específicas, como saludos, despedidas, identificaciones y palabras con connotaciones
+emocionales (positivas y negativas). Este enfoque es esencial en el contexto de un contact
+center, donde la precisión y la calidad de la comunicación son fundamentales para garantizar la
+satisfacción del cliente. Para lograr esto, se implementa un Autómata Finito Determinista (AFD)
+que facilita la identificación y estructuración de lexemas, permitiendo un mapeo efectivo de la
+interacción entre el cliente y el agente.
+
+El uso del AFD permite procesar las interacciones de manera eficiente y precisa, clasificando
+los lexemas en tiempo real. Esta capacidad no solo optimiza el flujo de datos, sino que también
+habilita la verificación del cumplimiento de un protocolo estándar de atención, asegurando que
+se sigan las mejores prácticas durante la interacción. La estructura del AFD es flexible, lo
+que permite la incorporación de nuevos términos y categorías a medida que evoluciona el
+lenguaje utilizado en el servicio al cliente.
+
+Además, el análisis de sentimientos se lleva a cabo mediante una tabla de puntuaciones
+asignadas a las palabras identificadas. Este análisis permite evaluar la calidad de la
+comunicación y la satisfacción del cliente de manera cuantitativa, proporcionando una visión
+integral del estado emocional de la interacción. La capacidad de medir el tono y el sentimiento
+detrás de las palabras ayuda a identificar patrones de comportamiento, lo que resulta
+invaluable para la mejora continua de los procesos de atención al cliente. Los resultados
+obtenidos del procesamiento de textos se presentan al final del análisis, destacando la
+efectividad del sistema para identificar patrones de comportamiento en el desempeño del
+servicio al cliente.
