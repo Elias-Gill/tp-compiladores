@@ -1,37 +1,16 @@
-% FIX: unificar resumen e introduccion, ademas de solucionar lo de las secciones.
-\section*{\centering Resumen}
-Este trabajo presenta un sistema para el análisis de interacciones en contact centers
-utilizando técnicas de Speech Analytics y tokenización. El objetivo principal es procesar
-transcripciones de audio, clasificando palabras en categorías como saludos, despedidas,
-identificaciones y términos con connotación emocional, además de realizar análisis de
-sentimientos. 
-
-La implementación base utiliza un autómata finito determinista (AFD) para el reconocimiento de
-patrones conversacionales y verificación de protocolos de atención. Como contribución adicional
-derivada del tiempo disponible, hemos desarrollado una segunda versión intercambiable del
-tokenizador basada en tablas hash, permitiendo comparar ambos enfoques en términos de
-eficiencia y precisión.
-
 \section{Introducción}
+Este trabajo presenta un sistema modular para el análisis de interacciones en contact centers,
+combinando técnicas de Speech Analytics y tokenización. El sistema procesa transcripciones de
+audio para clasificar palabras en categorías semánticas como saludos, despedidas,
+identificaciones y términos con carga emocional, además de realizar análisis de sentimientos.
 
-En el contexto de los contact centers, donde la calidad de la interacción es crucial,
-presentamos un sistema con dos implementaciones modularizadas de tokenización.
-
-El núcleo del sistema emplea un Autómata Finito Determinista (AFD) capaz de identificar
-estructuras conversacionales complejas, como secuencias de saludo, verificar el cumplimiento de
-protocolos de servicio y facilitar su extensión mediante la adición de nuevos estados.
-
-Como desarrollo complementario, se implementó una versión intercambiable basada en diccionarios
-hash, diseñada para búsquedas léxicas de tiempo constante y optimizada para el procesamiento
-eficiente de términos sueltos. Esta versión comparte la misma interfaz que el tokenizador
-basado en AFD, lo que permite alternar entre ambas sin alterar el resto del sistema.
-
-Ambas implementaciones pueden seleccionarse en tiempo de ejecución, lo cual demuestra cómo un
-mismo problema puede abordarse mediante paradigmas computacionales distintos, pero equivalentes
-en funcionalidad. En todos los casos, el sistema conserva su capacidad para clasificar
-semánticamente segmentos como saludos y despedidas, aplicar análisis de sentimientos mediante
-puntuación léxica y generar métricas sobre la calidad del servicio.
-
-Este diseño dual no solo enriquece el valor académico del proyecto, sino que además permite
-obtener evidencia empírica sobre las ventajas comparativas de cada enfoque en distintos
-escenarios operativos. Los detalles de implementación se presentan en la Sección 4.
+La implementación base utiliza un Autómata Finito Determinista (AFD) para reconocer patrones
+conversacionales complejos y verificar protocolos de atención, con capacidad de extensión
+mediante nuevos estados. Como contribución adicional, se desarrolló una versión alternativa
+basada en tablas hash (técnicamente es una implementación híbrida dado su uso de expresiones
+regulares para extraer palabras de signos de puntuación), optimizada para búsquedas léxicas en
+tiempo constante y compatible con la misma interfaz del tokenizador basado en AFD. Esta
+arquitectura dual permite comparar ambos enfoques en términos de eficiencia y precisión,
+seleccionando la implementación deseada en tiempo de ejecución sin modificar el sistema. El
+diseño no solo enriquece el valor académico del proyecto, sino que también proporciona
+evidencia empírica sobre las ventajas de cada enfoque en distintos escenarios operativos.

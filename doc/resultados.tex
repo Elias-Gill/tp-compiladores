@@ -1,10 +1,11 @@
 \section{Resultados}
 El siguiente es el resultado del análisis de un ejemplo de conversación entre un agente y un
-cliente, en el cual se detecta un sentimiento general positivo. Los tokens asociados a palabras
-positivas superan en número y en puntaje a las palabras negativas, lo que sugiere una
-interacción satisfactoria. Además, se verifica que el agente ha cumplido con el protocolo de
-atención al cliente, incluyendo saludo, identificación, y despedida, sin utilizar palabras
-prohibidas.
+cliente. Se verifica que el agente ha cumplido con el protocolo de atención al cliente,
+incluyendo saludo, identificación, y despedida, sin utilizar palabras prohibidas.
+
+Además, las métricas y el análisis de sentimiento se realizan por separado para el cliente y el
+agente, lo que facilita aún más la detección de discrepancias o valores atípicos en la
+conversación.
 
 \subsection{Caso de ejemplo}
 \subsubsection*{Entrada:}
@@ -37,22 +38,31 @@ Resto del texto ...
 \subsubsection*{Salida:}
 \begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
 	\begin{verbatim}
-    Sentimiento general: Positivo
-    Puntaje total: 12
-    Palabras positivas: ['bien', 'bien', 'genial', 'bien', 'bien', 
-    'perfecto', 'paciencia', 'excelente']
-    Palabras negativas: ['problema', 'problema']
-    Verificación del protocolo de Atención (Agente):
-        - Saludo: OK
-          - Identificación: OK
-          - Despedida: OK
-          - Palabras rudas: Ninguna detectada
+=== RESUMEN GENERAL ===
+Puntaje total: -10
+Sentimiento: NEGATIVO
+
+=== CLIENTE ===
+Puntaje: -6
+Saludo: No
+Despedida: Sí
+Identificación: Sí
+Palabras prohibidas: No
+
+=== AGENTE ===
+Puntaje: -4
+Saludo: Sí
+Despedida: Sí
+Identificación: Sí
+Palabras prohibidas: Sí
+
+Nota: Se ignoraron las palabras desconocidas
           \end{verbatim}
 \end{tcolorbox}
 
 \subsubsection*{Tokens:}
 \begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
-\begin{verbatim}
+	\begin{verbatim}
 	Valor                  Tipo                    Puntaje
 	------------------------------------------------------
 	agente:                TOKEN_AGENTE                  0
@@ -66,5 +76,47 @@ Resto del texto ...
 	el                     TOKEN_DESCONOCIDO             0
 
     Mas tokens...
+\end{verbatim}
+\end{tcolorbox}
+
+\subsubsection*{AFD:}
+Salida solo presente con el tokenizador de tipo AFD.
+\begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
+    \begin{verbatim}
+{
+  "initial": "start",
+  "states": {
+    "start": {
+      "transitions": {
+        "e": [
+          "start_e_sentimiento", 
+          ...
+          "start_e_saludo", 
+          "start_e_despedida", 
+          "start_e_prohibida"
+        ],
+        "m": [
+          "start_m_sentimiento",
+          ...
+        ],
+        ... mas transiciones
+      },
+      "is_final": true,
+      "token_type": "prohibida",
+      "puntuacion": -5
+    },
+    "start_e_sentimiento": {
+      "transitions": {
+        "x": [
+          "start_e_sentimiento_x_sentimiento",
+          ...
+        ],
+        ... mas transiciones
+      },
+      ... mas estados
+    }
+    ...
+  }
+}
 \end{verbatim}
 \end{tcolorbox}

@@ -33,10 +33,10 @@ class AFDTokenizer:
         }
 
         self._cargar_frases_al_afd(self.tabla.palabras, TIPO_SENTIMIENTO)
-        self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
-        self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
-        self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
         self._cargar_frases_al_afd(self.tabla.palabras_prohibidas, TIPO_PROHIBIDA)
+        self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
+        self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
+        self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
 
     def _cargar_frases_al_afd(self, frases_dict: Dict[str, int], tipo: str):
         for frase in frases_dict.keys():

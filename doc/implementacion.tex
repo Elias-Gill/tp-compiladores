@@ -1,10 +1,10 @@
-\section{Implementacion}
-\textit{NOTA:} aqui se explican la implementacion de los modulos principales del proyecto, pero
-el codigo fuente se encuentra en las seccion de anexos.
+\section{Implementación}
+\noindent\textbf{Nota:} Esta sección solo se describe la implementación y funcionamiento de los
+módulos principales. El código fuente de dichas clases se proporciona en la
+\hyperref[sec:Anexos]{sección de Anexos} (página \pageref{sec:Anexos}).
 
 \subsection{Estructura del codigo}
-% TODO: agregar una descripcion de las clases principales
-El sistema está estructurado de la siguiente manera:
+El código está estructurado de la siguiente manera:
 
 \begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
 	\begin{verbatim}
@@ -32,22 +32,21 @@ El sistema está estructurado de la siguiente manera:
 %    La tabla de sentimientos     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Tabla de Sentimientos}
-\texttt{TablaSentimientos} es una clase encargada de almacenar, gestionar y consultar
+\texttt{TablaSentimientos} es la clase encargada de almacenar, gestionar y consultar
 diferentes tipos de palabras utilizadas durante el análisis de sentimiento. Para ello, carga en
 memoria cinco diccionarios distintos desde archivos persistentes: palabras con puntaje,
 saludos, despedidas, identificaciones y palabras prohibidas, a través del método \texttt{\_cargar\_datos()}.
 
 Permite agregar o eliminar palabras con su puntaje asociado mediante los métodos
-\texttt{agregar\_palabra()} y \texttt{eliminar\_palabra()}, modificando tanto la estructura en
-memoria como los archivos de respaldo en disco.
+\texttt{agregar\_palabra(palabra: str, puntuacion: int)} y \texttt{eliminar\_palabra(palabra: str)}.
 
-Además, provee un método de búsqueda, \texttt{buscar\_palabra()}, que clasifica una palabra
-dada en uno de los tipos conocidos (como saludo, despedida o sentimiento) o la marca como
-desconocida si no está registrada.
+Provee un método de búsqueda, \texttt{buscar\_palabra(palabra: str)}, el cual retorna el tipo
+de palabra (saludo, prohibida, desconocida, etc) y su puntuación de sentimiento.
 
-La clase ofrece un sistema de sugerencias automáticas basado en la similitud de cadenas
-(\texttt{difflib.get\_close\_matches}), accesible mediante el método \texttt{sugerir\_similares()},
-facilitando así la corrección y actualización interactiva de la tabla de sentimientos.
+La clase también ofrece un sistema de sugerencias basado en la similitud de cadenas
+(\texttt{difflib.get\_close\_matches}), accesible mediante el método
+\texttt{sugerir\_similares()}, facilitando así la corrección y actualización interactiva de la
+tabla de sentimientos.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %      Los tokenizadores        %
@@ -81,20 +80,26 @@ carácter por carácter. Se generan estados intermedios hasta llegar al último 
 estado asociado se marca como final. En dicho estado final se almacenan el tipo de token y, si
 corresponde, el puntaje asociado.
 
-\subsubsection{Persistencia del AFD}
+\paragraph{\footnotesize{Representación del Estado de Error:}}
+El estado de \textit{error}, el cual captura palabras ajenas al vocabulario del AFD, se
+implementa implícitamente mediante transiciones no definidas. Cuando un símbolo de entrada no
+tiene transición asociada desde el estado actual, el sistema interpreta automáticamente una
+transición al estado de error. Esta estrategia optimiza memoria (al evitar representar
+transiciones redundantes) y simplifica la lógica de implementación. Esto equivale a modelar
+$q_{\text{error}}$ como sumidero universal no almacenado explícitamente.
 
+\subsubsection{Persistencia del AFD}
 El método \texttt{\_persistir\_afd()} guarda la estructura resultante en formato JSON bajo la
-carpeta \texttt{output}, facilitando su inspección externa o reutilización sin reconstrucción.
+carpeta \texttt{output}, facilitando su inspección. Cabe denotar que, a fin de simplificar la
+implementación, dicha representación no es utilizada para reconstruir el AFD.
 
 \subsubsection{Preprocesamiento del texto}
-
 Antes de tokenizar, se aplica \texttt{\_preprocesar\_hablantes()} para normalizar marcas como
 \texttt{agente:} o \texttt{cliente:}, asegurando que sean detectadas como unidades separadas.
 Luego, \texttt{\_procesar\_hablante()} se encarga de convertir estas marcas en tokens
 especializados.
 
 \subsubsection{Tokenización con AFD y \textit{longest match}}
-
 El núcleo del análisis léxico ocurre en \texttt{tokenizar()}, que recorre el texto carácter por
 carácter. Cuando se identifica una palabra candidata, se invoca
 \texttt{\_tokenizar\_con\_afd()}.
@@ -109,24 +114,21 @@ transiciones posibles en paralelo:
 	\item Si hay múltiples candidatos válidos, se conserva sólo el más largo.
 \end{itemize}
 
-Esto permite, por ejemplo, reconocer \texttt{muy buen servicio} como una sola frase si está
-registrada, en lugar de dividirla en partes.
+Esto permite resolver ambigüedades como \textit{``buen''}, \textit{``buenos''} y \textit{``buen
+	día''}.
 
 \subsubsection{Fallback: \texttt{\_tokenizar\_palabra\_simple()}}
-
 Si \texttt{\_tokenizar\_con\_afd()} no logra reconocer ningún token válido, se recurre al
 método \texttt{\_tokenizar\_palabra\_simple()}. Este método agrupa letras consecutivas para
 formar una palabra y consulta \texttt{TablaSentimientos.buscar\_palabra()}. Si la palabra no
 está registrada, se clasifica como \texttt{DESCONOCIDO}.
 
 \subsubsection{Manejo de signos de puntuación}
-
 Cualquier carácter que no sea alfanumérico ni parte de una palabra compuesta se clasifica como
 signo de puntuación mediante \texttt{\_es\_signo\_puntuacion()}, y se encapsula en un token con
 tipo \texttt{TOKEN\_SIGNO\_PUNTUACION}.
 
 \subsubsection{Resumen del flujo de análisis léxico}
-
 \begin{enumerate}
 	\item Se preprocesa el texto para separar marcas de hablante.
 	\item Se recorre el texto carácter a carácter.
@@ -135,23 +137,28 @@ tipo \texttt{TOKEN\_SIGNO\_PUNTUACION}.
 	\item Si el AFD falla, se analiza como palabra suelta con \texttt{\_tokenizar\_palabra\_simple()}.
 \end{enumerate}
 
-Este enfoque garantiza flexibilidad y precisión: reconoce expresiones compuestas, clasifica
-palabras sueltas, y marca adecuadamente lo desconocido, manteniendo una estructura extensible y
-fácil de actualizar mediante los diccionarios gestionados por \texttt{TablaSentimientos}.
+\subsubsection{Ventajas y limitaciones}
+Entre sus principales ventajas encontramos que hace que el proceso de tokenización sea
+determinista y predecible. Además, una vez construido, el AFD es especialmente eficiente en
+entornos con grandes volúmenes de texto.
+
+La principal desventaja radica en su complejidad, ya que la construcción del AFD puede implicar
+un procesamiento costoso tanto en tiempo como en memoria. Además, mantener el AFD en memoria
+durante la ejecución puede requerir una cantidad significativa de espacio, especialmente cuando
+el conjunto de patrones es grande o altamente variable. Asimismo, la implementación resulta más
+compleja de extender y mantener, particularmente cuando se ajustar los criterios de
+tokenización.
 
 %%%%%  Tokenizador hashmap  %%%%%
 \subsection{Tokenizador Hashmap}
-
 El tokenizador \texttt{HashTokenizer} ofrece una alternativa más simple y directa al uso de un
-autómata finito determinista (AFD). Su funcionamiento se basa en una exploración secuencial del
-texto con búsqueda de coincidencias en un diccionario hash (la instancia de
-\texttt{TablaSentimientos}). Aunque menos sofisticado que el AFD, su implementación es rápida y
-efectiva para corpus de tamaño moderado.
+AFD. Su funcionamiento se basa en una exploración secuencial del texto con búsqueda de
+coincidencias en un diccionario (la instancia de \texttt{TablaSentimientos}). Aunque menos
+sofisticado que el AFD, su implementación es rápida y efectiva.
 
 \subsubsection{Expresiones regulares}
-
-Se utilizan dos expresiones regulares precompiladas para facilitar el preprocesamiento del
-texto:
+Se emplean dos expresiones regulares precompiladas (lo que técnicamente convierte la
+implementación en híbrida) para agilizar el preprocesamiento del texto:
 
 \begin{itemize}
 	\item \texttt{\_hablante\_re}: Detecta marcas de hablante como \texttt{agente:} o
@@ -162,7 +169,6 @@ texto:
 \end{itemize}
 
 \subsubsection{Algoritmo de tokenización}
-
 El método \texttt{tokenizar()} transforma el texto en una lista de tokens mediante los
 siguientes pasos:
 
@@ -177,13 +183,11 @@ siguientes pasos:
 \end{enumerate}
 
 \subsubsection{Manejo de marcas de hablante}
-
 Cuando el patrón detecta secuencias como \texttt{agente :} o \texttt{cliente :}, se agrupan y
 transforman en un token específico (\texttt{TOKEN\_AGENTE} o \texttt{TOKEN\_CLIENTE}). Este
 paso se prioriza antes de intentar reconocer frases.
 
 \subsubsection{Reconocimiento de frases por ventana deslizante}
-
 En cada posición, se intenta formar una frase de longitud 3, luego 2, y finalmente 1 palabra.
 Para cada combinación posible:
 
@@ -196,11 +200,11 @@ Para cada combinación posible:
 	      avanza el cursor \texttt{i} en la longitud de la frase.
 \end{itemize}
 
-Este mecanismo puede considerarse una versión simplificada del algoritmo de \textit{longest
-	match}, sin necesidad de una estructura AFD.
+Este mecanismo puede considerarse una versión simplificada del algoritmo de longest match, sin
+necesidad de utilizar una estructura AFD. Sin embargo, también puede presentar errores al
+detectar frases que contienen signos de puntuación.
 
 \subsubsection{Fallback: palabra o signo aislado}
-
 Si no se reconoce ninguna frase:
 
 \begin{itemize}
@@ -212,33 +216,19 @@ Si no se reconoce ninguna frase:
 \end{itemize}
 
 \subsubsection{Ventajas y limitaciones}
+Una de las principales ventajas de este enfoque es que su implementación es más directa,
+comprensible y extensible. Además, presenta una mayor velocidad de instanciado, ya que no
+requiere la construcción previa del AFD. También resulta razonablemente eficaz cuando las
+frases significativas tienen una longitud acotada.
 
-\textbf{Ventajas:}
-
-\begin{itemize}
-	\item Implementación más directa y comprensible.
-	\item Menor sobrecarga computacional inicial: no requiere construcción previa de un AFD.
-	\item Razonablemente eficaz cuando las frases significativas tienen longitud acotada.
-\end{itemize}
-
-\textbf{Limitaciones:}
-
-\begin{itemize}
-	\item No garantiza coincidencias máximas globales, ya que detiene la búsqueda en la primera
-	      coincidencia de mayor longitud encontrada.
-
-	\item Puede ser menos eficiente para grandes volúmenes de texto o diccionarios más
-	      extensos.
-\end{itemize}
-
-Este tokenizador ofrece un buen equilibrio entre simplicidad y cobertura, y resulta útil como
-referencia base o método de respaldo frente a sistemas más complejos como el basado en AFD.
+Entre sus limitaciones, se encuentra el hecho de que no garantiza coincidencias cuando las
+frases contienen signos de puntuación y puede ser menos eficiente (en tiempo de CPU) cuando se
+trabaja con grandes volúmenes de texto.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %      Analizador de sentimiento        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Análisis de sentimiento y protocolo de atención}
-
 El análisis de sentimiento se basa en recorrer la secuencia de tokens de la conversación,
 asignando puntajes y detectando eventos clave para cliente y agente.
 
@@ -246,7 +236,6 @@ Se distingue quién habla en cada momento y se acumulan las métricas asociadas.
 identifican eventos importantes para evaluar el protocolo de atención.
 
 \subsubsection{Protocolos y etiquetas especiales}
-
 Se detectan eventos que afectan la evaluación del protocolo:
 
 \begin{itemize}
@@ -256,15 +245,12 @@ Se detectan eventos que afectan la evaluación del protocolo:
 	\item \textbf{Palabras prohibidas}: lenguaje inapropiado.
 \end{itemize}
 
+Esto se realiza de forma independiente tanto para el agente como para el cliente.
+
 \subsubsection{Estructura del procesamiento}
-
-La función principal recorre los tokens para:
-
-\begin{itemize}
-	\item Identificar el hablante actual (cliente o agente).
-	\item Acumular puntajes y marcar eventos por hablante.
-	\item Detectar palabras desconocidas para su posterior manejo.
-\end{itemize}
+La función principal recorre los tokens con tres objetivos. Primero, identificar el hablante
+actual (cliente o agente). Segundo, acumular puntajes y marcar eventos por hablante. Y tercero,
+detectar palabras desconocidas para su posterior manejo.
 
 \begin{verbatim}
 def analizar_sentimiento(tokens, tabla_sentimientos):
@@ -297,10 +283,7 @@ def analizar_sentimiento(tokens, tabla_sentimientos):
         resultado.puntaje_total += token.puntuacion
 \end{verbatim}
 
-Luego, si hay palabras desconocidas, se las maneja según se explica a continuación.
-
 \subsubsection{Corrección de tokens desconocidos}
-
 Durante el análisis, las palabras no encontradas en la tabla de sentimientos se clasifican como
 desconocidas. Para cada una se ofrece un menú interactivo con opciones:
 
@@ -326,4 +309,17 @@ futuros análisis.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %      Menu principal        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Generacion de informes}
+\subsection{\textit{main.py} (informes y flujo completo)}
+
+La generación de informes ocurre dentro de la función principal del archivo \textit{main.py},
+que además gestiona el flujo completo de ejecución (desde la selección del tokenizador hasta la
+escritura del informe final en la consola o en un archivo de salida).
+
+Existen dos formatos principales de salida. Si el programa se ejecuta en modo interactivo (no
+se proporciona un archivo de entrada), entonces se produce un informe simplificado. Este
+formato está pensado para exploraciones rápidas o pruebas manuales. Por otro lado, si se
+proporciona un archivo de texto para analizar, se realiza un informe más detallado.
+
+El sistema también diferencia entre la salida por consola (donde se utilizan códigos ANSI para
+resaltar visualmente los distintos tipos de tokens) y la salida a archivo, que se imprime sin
+colores para facilitar su posterior procesamiento o revisión.

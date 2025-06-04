@@ -1,20 +1,15 @@
-\section{Conclusión}
+\section{Conclusión} 
+Este proyecto implementa un sistema para el análisis de sentimientos y la verificación del
+cumplimiento de protocolos en conversaciones, utilizando una tabla de sentimientos y un
+autómata finito determinista (AFD). El sistema permite detectar saludos, identificaciones,
+despedidas, frases con carga emocional y palabras prohibidas, evaluando si el agente cumple con
+los criterios del protocolo establecido.
 
-Este proyecto implementa un sistema integral de análisis de sentimientos y verificación de
-protocolos de atención mediante el uso de un Autómata Finito Determinista (AFD) y una tabla de
-sentimientos. La arquitectura del sistema permite la identificación y clasificación de palabras
-con carga emocional, así como la detección de palabras inapropiadas en las interacciones.
-Además, el sistema verifica el cumplimiento de los elementos fundamentales del protocolo de
-atención (saludo, identificación y despedida), proporcionando una evaluación detallada de las
-respuestas del agente.
+Se compararon dos enfoques para la tokenización del texto: uno basado en AFD y otra solucion
+híbrida principalmente enfocada en búsqueda mediante tablas hash. Ambos cumplen con los
+objetivos y presentan ventajas propias, pero se optó por el tokenizador basado en AFD como
+implementación principal, debido a su mayor precisión al reconocer frases largas y resolver
+ambigüedades.
 
-La flexibilidad del sistema para agregar o eliminar palabras de la tabla de sentimientos y
-actualizar el AFD en tiempo real lo hace adaptable a nuevas necesidades o criterios específicos
-de análisis. Esta capacidad de modificación y persistencia de datos asegura que el sistema se
-pueda ajustar continuamente para mejorar la precisión de las evaluaciones y adaptarse a
-diferentes contextos de uso.
-
-En conjunto, este sistema representa una herramienta robusta y adaptable para el análisis
-automatizado de interacciones en centros de contacto, con potencial de ser extendido o
-integrado en aplicaciones más amplias de procesamiento de lenguaje natural (PLN) o de mejora de
-calidad en la atención al cliente.
+El sistema es fácilmente adaptable, ya que permite agregar o eliminar palabras y actualizar la
+tabla de símbolos, lo que facilita su ajuste a distintos contextos o criterios de análisis.
