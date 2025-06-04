@@ -11,6 +11,8 @@ dirs:
 
 # Compilar (LaTeX + BibTeX + LaTeX x2)
 compile:
+	# Se compila 2 veces para asegurar la actualizacion del indice
+	pdflatex -output-directory=$(OUT_DIR) $(MAIN).tex
 	pdflatex -output-directory=$(OUT_DIR) $(MAIN).tex
 	#
 	# ----- Si usas BibTeX: -------

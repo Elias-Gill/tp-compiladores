@@ -6,8 +6,8 @@ interacción satisfactoria. Además, se verifica que el agente ha cumplido con e
 atención al cliente, incluyendo saludo, identificación, y despedida, sin utilizar palabras
 prohibidas.
 
-\subsection*{Caso de ejemplo}
-\subsection*{Entrada:}
+\subsection{Caso de ejemplo}
+\subsubsection*{Entrada:}
 \begin{verbatim}
 -----------------------------------------------------------------    
 Agente: ¡Buenos días! Gracias por contactar con el servicio al 
@@ -30,51 +30,11 @@ Veo que efectivamente tiene un plan de 100 Mbps.
 Déjeme hacer una prueba de línea para verificar cómo está 
 funcionando su conexión en este momento.
 
-Cliente: Sí, por favor. Me gustaría que se resolviera pronto.
+Resto del texto ... 
+-----------------------------------------------------------------    
+\end{verbatim}
 
-Agente: ¡Entiendo perfectamente! Estoy realizando la prueba.
-Vaya, parece que hay algunas fluctuaciones en la señal. 
-No se preocupe, eso es algo que podemos solucionar. Voy a 
-reiniciar su línea desde aquí, lo que puede ayudar a estabilizar 
-la conexión. Esto tomará solo un minuto, y perderá la conexión 
-brevemente. ¿Le parece bien?
-
-Cliente: Sí, eso suena bien. Espero que funcione.
-
-Agente: ¡Genial! Estoy reiniciando su línea. Listo. 
-El reinicio se ha completado. Ahora, por favor, reinicie también 
-su módem y router manualmente. Simplemente desconéctelos de la 
-corriente durante 30 segundos y luego vuelva a conectarlos. Esto 
-debería refrescar la señal.
-
-Cliente: Está bien, lo haré. ¿Y si eso no soluciona el problema?
-
-Agente: Si después de reiniciar su equipo el problema persiste, 
-    no se preocupe. Programaremos una visita de un técnico a su 
-    domicilio para asegurarnos de que todo esté en orden. Queremos 
-    que disfrute del servicio por el que está pagando.
-
-    Cliente: Eso suena bien. Solo quiero que funcione como debería.
-
-    Agente: Lo comprendo completamente, Juan. Estoy segura de que 
-    podremos resolver esto. Espero que el reinicio funcione, pero 
-    si no, estaremos aquí para ayudarle. ¿Hay algo más en lo que 
-    pueda asistirte hoy?
-
-    Cliente: No, eso es todo. Solo espero que se solucione pronto.
-
-    Agente: ¡Perfecto! Agradezco su paciencia y confianza. No dude 
-    en llamarnos si necesita algo más. Le deseo un excelente día 
-    y que su servicio se estabilice pronto. 
-    ¡Estamos aquí para ayudarle!
-
-    Cliente: Gracias, adiós.
-
-    Agente: ¡Adiós, Juan! Que tenga un buen día.
-    ----------------------------------------------------------------- 
-    \end{verbatim}
-
-\subsection*{Salida:}
+\subsubsection*{Salida:}
 \begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
 	\begin{verbatim}
     Sentimiento general: Positivo
@@ -88,4 +48,23 @@ Agente: Si después de reiniciar su equipo el problema persiste,
           - Despedida: OK
           - Palabras rudas: Ninguna detectada
           \end{verbatim}
+\end{tcolorbox}
+
+\subsubsection*{Tokens:}
+\begin{tcolorbox}[colback=gray!10, colframe=gray!80, sharp corners, boxrule=0.5pt]
+\begin{verbatim}
+	Valor                  Tipo                    Puntaje
+	------------------------------------------------------
+	agente:                TOKEN_AGENTE                  0
+	Buenos días            TOKEN_SALUDO                  0
+	,                      TOKEN_SIGNO_PUNTUACION        0
+	¡                      TOKEN_SIGNO_PUNTUACION        0
+	Gracias                TOKEN_SENTIMIENTO             1
+	por                    TOKEN_DESCONOCIDO             0
+	contactar              TOKEN_DESCONOCIDO             0
+	con                    TOKEN_DESCONOCIDO             0
+	el                     TOKEN_DESCONOCIDO             0
+
+    Mas tokens...
+\end{verbatim}
 \end{tcolorbox}

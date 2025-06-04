@@ -1,101 +1,194 @@
 \section{Arquitectura}
 
-El sistema cuenta con los siguientes modulos:
+El sistema cuenta con los siguientes módulos:
 
 \begin{itemize}
-    \item Tabla de sentimientos
-    \item Tokenizador
-    \item Analizador de sentimientos
-    \item Reportes (menu principal)
+	\item Tabla de sentimientos
+	\item Tokenizador
+	\item Analizador de sentimientos
+	\item Reportes (menú principal)
 \end{itemize}
 
-\subsection{Descripcion del algoritmo}
+Cada modulo esta diseñado para realizar funciones especificas de manera modular, por lo que
+se pueden realizar distintas implementaciones siempre y cuando se sigan las interfaces comunes.
 
-\subsection{Tabla de simbolos}
+\subsection{Flujo del programa}
+El programa inicia cargando la tabla con las palabras necesarias para realizar el análisis de
+sentimientos. A continuación, se selecciona e instancia el tipo de tokenizador, según los
+argumentos proporcionados al momento de ejecutar el programa.
+
+Si se indica un archivo como argumento, su contenido es procesado automáticamente. En caso
+contrario, el programa entra en modo interactivo, permitiendo al usuario ingresar texto
+directamente por consola.
+
+La entrada es primero tokenizada utilizando el tokenizador seleccionado. Con la lista completa
+de tokens disponibles, aquellos que son clasificados como \texttt{desconocidos} son presentados
+al usuario para su corrección o descarte. Para cada token desconocido, el usuario puede elegir
+entre las siguientes opciones:
+
+\begin{itemize}
+	\item Ignorar el token.
+	\item Añadirlo a la tabla de sentimientos.
+	\item Corregirlo utilizando una de las palabras sugeridas (si existen).
+\end{itemize}
+
+En caso de optar por la corrección mediante sugerencias, se muestra una lista de palabras
+similares, calculadas utilizando la distancia de Levenshtein.
+
+Finalmente, se realiza el análisis de sentimiento utilizando los tokens generados. El resultado
+del análisis se muestra por consola y también se guarda en un archivo de texto plano como
+resumen del procesamiento. También se almacena la lista de tokens resultantes del proceso de
+tokenizacion.
+
+\subsection{Tabla de Sentimientos}
+La tabla de sentimientos es una estructura central del sistema, que contiene un conjunto de
+palabras y frases categorizadas por tipo (por ejemplo: positivas, negativas, neutras) junto con
+los puntajes asociados a cada una. Estos puntajes son utilizados posteriormente para calcular
+la polaridad del texto analizado.
+
+Además de su rol como base de conocimiento, esta tabla incluye funcionalidades de conveniencia
+que facilitan su uso y actualización dinámica durante el análisis. Entre las capacidades
+principales se destacan:
+
+\begin{itemize}
+	\item \textbf{Búsqueda de palabras o frases:} permite consultar rápidamente si una palabra
+	      o frase está presente en la tabla y recuperar su puntaje asociado.
+
+	\item \textbf{Cálculo de correcciones recomendadas:} Calcula sugerencias de posibles
+	      correcciones utilizando la distancia de Levenshtein, proponiendo palabras similares ya
+	      registradas.
+
+	\item \textbf{Incorporación de nuevas entradas:} el usuario puede añadir palabras con
+	      su respectivo puntaje de sentimiento, ampliando así progresivamente la tabla a medida
+	      que se utiliza el programa.
+\end{itemize}
+
 \subsection{Tokenizador}
-\subsection{Analizador de sentimientos}
-\subsection{Reportes}
+El tokenizador es el componente encargado de segmentar el texto de entrada en unidades léxicas
+denominadas \emph{tokens}. Es capaz de identificar y clasificar distintos tipos de tokens,
+tales como palabras simples, frases compuestas, signos de puntuación, números o símbolos
+especiales. Además, posee mecanismos para resolver ambigüedades en aquellos casos donde
+múltiples tipos pudieran coincidir con un mismo patrón textual.
 
+Este proceso no se limita a una separación mecánica por espacios o signos, sino que aplica
+reglas específicas para reconocer construcciones con significado semántico relevante para el
+análisis de sentimientos.
+
+El tokenizador recibe una entrada en forma de texto plano y retorna una lista estructurada de
+tokens.
+
+\subsubsection{Tokens}
+Cada token incluye la siguiente información:
+
+\begin{itemize}
+	\item \textbf{Texto del token:} la representación literal extraída del texto original.
+	\item \textbf{Tipo:} categoría asignada al token (por ejemplo, palabra conocida, palabra desconocida, puntuación, etc.).
+	\item \textbf{Puntaje:} valor numérico asociado al token, obtenido de la tabla de sentimientos si corresponde.
+\end{itemize}
+
+\subsection{Analisis de sentimiento}
+
+Una vez finalizado el proceso de tokenización, el sistema obtiene la lista completa de tokens
+extraídos del texto. A continuación, se procede al análisis de estos tokens para determinar su
+validez y relevancia en el contexto del análisis de sentimientos.
+
+Si se detectan tokens de tipo \emph{desconocido} (que no se encuentran registrados en la tabla
+de sentimientos), el sistema solicita al usuario elegir si ignorarlos o proceder a la
+corrección manual de dichos tokens. En caso de que el usuario decida corregir los tokens
+desconocidos, este módulo se encarga de gestionar todo el proceso de corrección.
+
+El análisis de sentimiento se realiza de forma diferenciada para cada hablante, lo que permite
+evaluar en detalle el desempeño individual del cliente y del agente dentro de la conversación.
+
+\subsection{Reportes}
+El módulo de reportes se encarga de generar archivos con los resultados del proceso de
+tokenización y del análisis de sentimiento. Además, presenta un resumen conciso directamente en
+la terminal.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Decisiones clave en la parte de implemetacion %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Decisiones clave}
 
 \subsubsection{Tipos de tokens}
-Los tipos de tokens identificados por el tokenizador seran:
-- TOKEN_SALUDO: frase o palabra perteneciente al saludo
-- TOKEN_DESPEDIDA: frase o palabra perteneciente a la despedida
-- TOKEN_IDENTIFICACION: token que simboliza la identificacion de alguna de las partes
-- TOKEN_PROHIBIDA: mala palabra o frase grosera
-- TOKEN_SENTIMIENTO: palabra suelta que lleva un sentimiento asociado
-- TOKEN_DESCONOCIDO: palabra no registrada en la tabla de sentimientos
-- TOKEN_AGENTE: token especial que indica el cambio de hablante en la conversacion
-- TOKEN_CLIENTE: token especial que indica el cambio de hablante en la conversacion
-- TOKEN_SIGNO_PUNTUACION: token especial que simboliza un signo de puntuacion
+Los tipos de tokens identificados por el tokenizador son:
 
-\subsubsection{Deteccion de frases}
+\begin{enumerate}
+	\item {\footnotesize\textbf{TOKEN\_SALUDO}}: frase o palabra que corresponde a un saludo.
+	\item {\footnotesize\textbf{TOKEN\_DESPEDIDA}}: frase o palabra de despedida.
+	\item {\footnotesize\textbf{TOKEN\_IDENTIFICACION}}: indica la identificación de alguna de las partes.
+	\item {\footnotesize\textbf{TOKEN\_PROHIBIDA}}: palabra o frase grosera.
+	\item {\footnotesize\textbf{TOKEN\_SENTIMIENTO}}: palabra individual con un sentimiento asociado.
+	\item {\footnotesize\textbf{TOKEN\_DESCONOCIDO}}: palabra no registrada en la tabla de sentimientos.
+	\item {\footnotesize\textbf{TOKEN\_AGENTE}}: indica cambio de hablante a un agente.
+	\item {\footnotesize\textbf{TOKEN\_CLIENTE}}: indica cambio de hablante a un cliente.
+	\item {\footnotesize\textbf{TOKEN\_SIGNO\_PUNTUACION}}: representa signos de puntuación.
+\end{enumerate}
 
-Como parte del programa, tomamos el reto de poder identificar no solo palabras sueltas, sino
-tambien frases cortas como "buenos dias", esto a fin de facilitar el proceso de identificacion
-de los protocolos de saludo, identificacion y demas. Por tanto, ambas implementaciones tambien
-deberan poder solucionar ambiguedades como "buenos"(sentimiento) y "buenos dias"(saludo).
+\subsubsection{Detección de frases}
+Como parte del diseño del sistema, se asumió el desafío de identificar no solo palabras
+aisladas, sino también frases cortas como \textit{"buenos días"}, con el fin de facilitar la
+identificación de protocolos como saludos o identificaciones.
 
-Esto tambien nos da un mejor panorama sobre como afecta el mecanismo para tokenizar escogido en
-el proceso de tokenzacion.
+Esto implica que el sistema debe resolver ambigüedades, por ejemplo, entre \textit{"buenos"}
+(sentimiento) y \textit{"buenos días"} (saludo).
+
+Esto también influye directamente en la elección del método de tokenización, ya que debe
+priorizar correctamente las frases completas por sobre palabras sueltas.
 
 \subsubsection{API de la tabla de sentimientos}
+La tabla de sentimientos almacena los distintos tipos de frases (saludos, sentimientos, etc.)
+en diccionarios separados. Además, cuenta con funciones auxiliares, entre ellas la más
+importante es \textbf{\textit{buscar\_palabra()}}, utilizada especialmente por el tokenizador
+basado en hashmaps.
 
-Esta tabla guarda en diccionarios separados los distintos tipos de frases (saludos,
-sentimeintos, etc). Tambien con algunas funciones de conveniencia, de la cual la mas importante
-es \textbf{\textit{buscar_palabra()}}, la cual es utilizada especialmente por el tokenizador de
-tipo hashmap. Esta funcion ganarantiza de que se priorizan los tipos de frases y palabras en el
-siguiente orden:
+Esta función garantiza la siguiente prioridad al buscar una palabra:
 
-if palabra in self.saludos:
-if palabra in self.despedidas:
-if palabra in self.identificaciones:
-if palabra in self.palabras_prohibidas:
-if palabra in self.palabras:
-return (TIPO_DESCONOCIDO, 0)
+\begin{enumerate}
+	\item \footnotesize{TOKEN\_SALUDO}
+	\item \footnotesize{TOKEN\_DESPEDIDA}
+	\item \footnotesize{TOKEN\_IDENTIFICACION}
+	\item \footnotesize{TOKEN\_PROHIBIDA}
+	\item \footnotesize{TOKEN\_SENTIMIENTO}
+	\item \footnotesize{TOKEN\_DESCONOCIDO}
+\end{enumerate}
 
-Por tanto cuando dos palabras estan repetidas en la tabla de sentimientos entonces, se da
-prioridad a los demas tipos de tokens antes que al token de sentimiento.
+Por lo tanto, si una palabra aparece en múltiples categorías, se prioriza el tipo más
+específico (como saludo, despedida, etc.) antes que un simple sentimiento.
 
-\subsubsection{Tipo de tokenizador}
-Dado el tiempo de sobra que nos resto, decidimos realizado tos tipos de tokenizadores. Uno
-basado en AFD y otro basado en hashmaps.
+\subsubsection{Mecanismo de tokenizacion}
+Dado el tiempo disponible, se desarrollaron dos tipos de tokenizadores: uno basado en autómatas
+finitos deterministas (AFD) y otro basado en tablas hash.
 
-Ambas implementaciones implementan una simple interfaz, la cual cuenta con el metodo
-\textbf{\textit{tokenizar()}}. Esta funcion devuelve una lista con los tokens parceados.
+Ambos implementan una interfaz común con el método \textbf{\textit{tokenizar()}}, el cual
+devuelve una lista con los tokens analizados.
 
-Se barajo la posibilidad de realizar la tokenizacion con un metodo
-\textbf{\textit{next_token()}}, pero para mantener la simplicidad, se opto por simplemente
-retornar la lista con todos los tokens.
+Se consideró la posibilidad de utilizar un método \textbf{\textit{next\_token()}}, pero se optó
+por una solución más simple que retorne todos los tokens de una vez.
 
-Ambos tokenizadores son facilmente intercambiables, por lo cual se pueden realizar pruebas y
-comparar las caracteristicas de ambos tokenizadores por separado. Asi tambien podemos
-determinar cual es mas conveniente en cuanto a facilidad de mantenimiento, extension,
-implementacion y rendimiento.
+Gracias a su diseño modular, los tokenizadores son fácilmente intercambiables, lo que permite
+realizar comparaciones sobre facilidad de mantenimiento, extensibilidad, implementación y
+rendimiento.
 
-\subsubsection{Solucion de ambiguedades}
+\subsubsection{Solución de ambigüedades}
+En el tokenizador basado en hashmaps, se emplea un buffer de hasta 3 palabras, lo que permite
+dar prioridad a las frases más largas. Si no se encuentra una coincidencia con 3 palabras, se
+intenta con 2 y luego con 1.
 
-Para el tokenizador basado en hashmap, se cuenta con un buffer de hasta 3 palabras para poder
-dar prioridad a las frases mas largas, luego si no se encuentra se prueba con 2 y con 1
-palabra.
+En el caso del tokenizador AFD se utiliza el algoritmo de \textit{longest match}, es decir, se
+continúa la lectura mientras el autómata permita avanzar hacia un estado válido, favoreciendo
+la identificación de frases completas. La lógica es equivalente a la usada en el tokenizador
+hash, respetando la misma prioridad de carga:
 
-En el caso del AFD utilizamos el algoritmo de "largest", es decir, mientras se continua hasta
-que el resultado caiga en un nuevo token, pues cargando el AFD. Ademas, de ese modo se da
-prioridad a las frases, ademas, la misma logica anteior que con la tabla de hash se aplica, el
-orden de carga del afd es el siguiente:
+\begin{verbatim}
+self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
+self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
+self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
+self._cargar_frases_al_afd(self.tabla.palabras_prohibidas, TIPO_PROHIBIDA)
+self._cargar_frases_al_afd(self.tabla.palabras, TIPO_SENTIMIENTO)
+\end{verbatim}
 
-        self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
-        self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
-        self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
-        self._cargar_frases_al_afd(self.tabla.palabras_prohibidas, TIPO_PROHIBIDA)
-        self._cargar_frases_al_afd(self.tabla.palabras, TIPO_SENTIMIENTO)
-
-asi que si hay palabras repetidas, se tomara como la palabra "canon" a aquellas diferentes del
-tipo sentimiento.
-
-% FIX: preguntar a chatgpt como funciona ese algoritmo
-
-%TODO: ahi debe tambien ir lo de que cuando cargas la tabla de simbolos, se toma como 
-% la palabra canon el archivo de "palabras_sentimiento" por tanto si se repiten palabras en
-% los otros archivos seran sobrecargadas.
+Así, si una palabra aparece en más de un conjunto, se considera como "canónica" aquella
+asociada al tipo más específico (es decir, distinto de sentimiento). Más detalles sobre el
+algoritmo de "longest match" y el proceso de carga del AFD se explican en las secciones
+siguientes.

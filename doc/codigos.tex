@@ -1,5 +1,778 @@
 \subsection{Codigo fuente}
 
+En esta seccion solamente se muestran las clases y componentes mas importantes del sistema.
+Aquellas funciones utilitarias o componentes poco relevantes para el funcionamiento del
+algoritmo de tokenizacion y analisis seran omitidos.
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%     CODIGO           %
+%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Tabla de sentimientos}
+\begin{lstlisting}
+import difflib
+from pathlib import Path
+
+TIPO_SENTIMIENTO = "sentimiento"
+TIPO_SALUDO = "saludo"
+TIPO_DESPEDIDA = "despedida"
+TIPO_IDENTIFICACION = "identificacion"
+TIPO_PROHIBIDA = "prohibida"
+TIPO_DESCONOCIDO = "desconocido"
+
+
+class TablaSentimientos:
+    # Constantes de archivos
+    BASE_DIR = Path("tokenizer/sentiment_symbols")
+    ARCHIVO_PUNTAJES = BASE_DIR / "palabras_y_puntajes.txt"
+    ARCHIVO_SALUDOS = BASE_DIR / "saludos.txt"
+    ARCHIVO_DESPEDIDAS = BASE_DIR / "despedidas.txt"
+    ARCHIVO_IDENTIFICACIONES = BASE_DIR / "identificaciones.txt"
+    ARCHIVO_PROHIBIDAS = BASE_DIR / "palabras_prohibidas.txt"
+
+    def __init__(self):
+        # Diccionarios separados
+        self.palabras = {}
+        self.saludos = {}
+        self.despedidas = {}
+        self.identificaciones = {}
+        self.palabras_prohibidas = {}
+
+        self._cargar_datos()
+
+    def agregar_palabra(self, palabra, puntaje, persistir=True):
+        palabra = palabra.lower().strip()
+        self.palabras[palabra] = int(puntaje)
+        if persistir:
+            self._guardar_palabra_en_archivo(palabra, puntaje, self.ARCHIVO_PUNTAJES)
+
+    def eliminar_palabra(self, palabra, persistir=True):
+        palabra = palabra.lower().strip()
+        if palabra in self.palabras:
+            del self.palabras[palabra]
+            if persistir:
+                self._eliminar_palabra_de_archivo(palabra, self.ARCHIVO_PUNTAJES)
+            return True
+        return False
+
+    def buscar_palabra(self, palabra):
+        palabra = palabra.lower().strip()
+        if palabra in self.saludos:
+            return (TIPO_SALUDO, self.saludos[palabra])
+        if palabra in self.despedidas:
+            return (TIPO_DESPEDIDA, self.despedidas[palabra])
+        if palabra in self.identificaciones:
+            return (TIPO_IDENTIFICACION, self.identificaciones[palabra])
+        if palabra in self.palabras_prohibidas:
+            return (TIPO_PROHIBIDA, self.palabras_prohibidas[palabra])
+        if palabra in self.palabras:
+            return (TIPO_SENTIMIENTO, self.palabras[palabra])
+        return (TIPO_DESCONOCIDO, 0)
+
+    def _cargar_archivo_comun(self, archivo: Path, destino: dict):
+        if not archivo.exists():
+            return
+        with open(archivo, "r", encoding="utf-8") as f:
+            for linea in f:
+                linea = linea.strip()
+                if not linea:
+                    continue
+                try:
+                    palabra, valor = linea.split(",", 1)
+                    destino[palabra.lower()] = int(valor)
+                except ValueError:
+                    continue
+
+    def _cargar_datos(self):
+        self._cargar_archivo_comun(self.ARCHIVO_PUNTAJES, self.palabras)
+        self._cargar_archivo_comun(self.ARCHIVO_SALUDOS, self.saludos)
+        self._cargar_archivo_comun(self.ARCHIVO_DESPEDIDAS, self.despedidas)
+        self._cargar_archivo_comun(self.ARCHIVO_IDENTIFICACIONES, self.identificaciones)
+        self._cargar_archivo_comun(self.ARCHIVO_PROHIBIDAS, self.palabras_prohibidas)
+
+    def _guardar_palabra_en_archivo(self, palabra, valor, archivo):
+        try:
+            with open(archivo, "a", encoding="utf-8") as f:
+                f.write(f"{palabra},{valor}\n")
+        except IOError as e:
+            print(f"Error al guardar en archivo: {e}")
+
+    def _eliminar_palabra_de_archivo(self, palabra, archivo):
+        if not archivo.exists():
+            return
+        try:
+            with open(archivo, "r", encoding="utf-8") as f:
+                lineas = [
+                    linea
+                    for linea in f
+                    if not linea.lower().startswith(f"{palabra.lower()},")
+                ]
+            with open(archivo, "w", encoding="utf-8") as f:
+                f.writelines(lineas)
+        except IOError as e:
+            print(f"Error al modificar archivo: {e}")
+
+    def sugerir_similares(self, palabra: str, max_sugerencias=3):
+        palabra = palabra.lower().strip()
+
+        # Palabras conocidas del sistema
+        todas = (
+            set(self.palabras)
+            | set(self.saludos)
+            | set(self.despedidas)
+            | set(self.identificaciones)
+            | set(self.palabras_prohibidas)
+        )
+
+        sugerencias = difflib.get_close_matches(
+            palabra, todas, n=max_sugerencias, cutoff=0.6
+        )
+        return sugerencias
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%     CODIGO           %
+%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Tokenizador AFD}
+\begin{lstlisting}
+import json
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+from tokenizer.TablaSentimientos import (TIPO_DESPEDIDA, TIPO_IDENTIFICACION,
+                                         TIPO_PROHIBIDA, TIPO_SALUDO,
+                                         TIPO_SENTIMIENTO, TablaSentimientos)
+from tokenizer.tokens import (TOKEN_AGENTE, TOKEN_CLIENTE,
+                              TOKEN_SIGNO_PUNTUACION, Token, asignar_tipo)
+
+
+class AFDTokenizer:
+    def __init__(self, tabla_sentimientos: TablaSentimientos):
+        self.tabla = tabla_sentimientos
+        self._build_afd_completo()
+        self._persistir_afd()
+
+    def _persistir_afd(self):
+        """Guarda el AFD en un archivo JSON en la carpeta output"""
+        output_dir = Path("output")
+        output_dir.mkdir(exist_ok=True)
+
+        afd_file = output_dir / "afd.json"
+        with open(afd_file, "w", encoding="utf-8") as f:
+            json.dump(self.afd, f, indent=2, ensure_ascii=False)
+
+    def _build_afd_completo(self):
+        self.afd = {
+            "initial": "start",
+            "states": {
+                "start": {"transitions": {}, "is_final": False, "token_type": None}
+            },
+        }
+
+        self._cargar_frases_al_afd(self.tabla.palabras, TIPO_SENTIMIENTO)
+        self._cargar_frases_al_afd(self.tabla.saludos, TIPO_SALUDO)
+        self._cargar_frases_al_afd(self.tabla.despedidas, TIPO_DESPEDIDA)
+        self._cargar_frases_al_afd(self.tabla.identificaciones, TIPO_IDENTIFICACION)
+        self._cargar_frases_al_afd(self.tabla.palabras_prohibidas, TIPO_PROHIBIDA)
+
+    def _cargar_frases_al_afd(self, frases_dict: Dict[str, int], tipo: str):
+        for frase in frases_dict.keys():
+            chars = list(frase.lower())
+            current_state = "start"
+
+            for i, char in enumerate(chars):
+                next_state = f"{current_state}_{char}_{tipo}"
+
+                is_final = i == len(chars) - 1
+                token_type = tipo if is_final else None
+                puntuacion = frases_dict[frase] if is_final else 0
+
+                if next_state not in self.afd["states"]:
+                    self.afd["states"][next_state] = {
+                        "transitions": {},
+                        "is_final": is_final,
+                        "token_type": token_type,
+                        "puntuacion": puntuacion,
+                    }
+
+                if char not in self.afd["states"][current_state]["transitions"]:
+                    self.afd["states"][current_state]["transitions"][char] = []
+                self.afd["states"][current_state]["transitions"][char].append(
+                    next_state
+                )
+
+                current_state = next_state
+
+    def tokenizar(self, texto: str) -> List[Token]:
+        tokens = []
+        i = 0
+        n = len(texto)
+
+        texto = self._preprocesar_hablantes(texto)
+
+        while i < n:
+            if texto[i].isspace():
+                i += 1
+                continue
+
+            if self._es_signo_puntuacion(texto[i]):
+                tokens.append(Token(TOKEN_SIGNO_PUNTUACION, texto[i]))
+                i += 1
+                continue
+
+            hablante_token = self._procesar_hablante(texto, i)
+            if hablante_token:
+                tokens.append(hablante_token)
+                i += len(hablante_token.valor)
+                continue
+
+            token, delta = self._tokenizar_con_afd(texto, i)
+            tokens.append(token)
+            i += delta
+
+        return tokens
+
+    def _procesar_hablante(self, texto: str, start: int) -> Optional[Token]:
+        if texto[start:].lower().startswith("agente:"):
+            return Token(TOKEN_AGENTE, "agente:")
+        elif texto[start:].lower().startswith("cliente:"):
+            return Token(TOKEN_CLIENTE, "cliente:")
+        return None
+
+    def _preprocesar_hablantes(self, texto: str) -> str:
+        import re
+
+        return re.sub(
+            r"\b(agente|cliente):",
+            lambda m: f" {m.group(0)} ",
+            texto,
+            flags=re.IGNORECASE,
+        )
+
+    def _es_signo_puntuacion(self, char: str) -> bool:
+        return not (char.isalnum() or char.isspace() or char in "'-_áéíóúüñ")
+
+    def _tokenizar_con_afd(self, texto: str, start: int) -> Tuple[Token, int]:
+        best_token = None
+        best_length = 0
+        current_states = [("start", "", 0)]
+
+        i = start
+        while i < len(texto) and current_states:
+            char = texto[i].lower()
+            new_states = []
+
+            for state, acc, total_length in current_states:
+                if char in self.afd["states"][state]["transitions"]:
+                    for next_state in self.afd["states"][state]["transitions"][char]:
+                        new_acc = acc + texto[i]
+                        new_length = total_length + 1
+
+                        if self.afd["states"][next_state]["is_final"]:
+                            token_type = self.afd["states"][next_state]["token_type"]
+                            puntuacion = self.afd["states"][next_state]["puntuacion"]
+
+                            if new_length > best_length:
+                                best_token = Token(
+                                    asignar_tipo(token_type), new_acc, puntuacion
+                                )
+                                best_length = new_length
+
+                        new_states.append((next_state, new_acc, new_length))
+
+            current_states = new_states
+            i += 1
+
+        if best_token:
+            return best_token, best_length
+
+        return self._tokenizar_palabra_simple(texto, start)
+
+    def _tokenizar_palabra_simple(self, texto: str, start: int) -> Tuple[Token, int]:
+        i = start
+        n = len(texto)
+
+        while i < n and (texto[i].isalnum() or texto[i] in "'-_áéíóúüñ"):
+            i += 1
+
+        if i == start:
+            return Token("DESCONOCIDO", texto[start]), 1
+
+        palabra = texto[start:i].lower()
+        tipo, puntuacion = self.tabla.buscar_palabra(palabra)
+        return Token(asignar_tipo(tipo), palabra, puntuacion), i - start
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%     CODIGO           %
+%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Tokenizador HashMap}
+\begin{lstlisting}
+import re
+
+from tokenizer.TablaSentimientos import TIPO_DESCONOCIDO, TablaSentimientos
+from tokenizer.tokens import (TOKEN_AGENTE, TOKEN_CLIENTE,
+                              TOKEN_SIGNO_PUNTUACION, Token, asignar_tipo)
+
+
+class HashTokenizer:
+    def __init__(self, tabla_sentimientos: TablaSentimientos):
+        self.tabla = tabla_sentimientos
+        self._hablante_re = re.compile(r"\b(agente|cliente):", re.IGNORECASE)
+        self._palabras_re = re.compile(r"\w+|[^\w\s]", re.UNICODE)
+
+    def tokenizar(self, texto: str) -> list[Token]:
+        # extraer los hablantes del texto
+        texto = self._hablante_re.sub(lambda m: f" {m.group(0)} ", texto)
+        palabras = self._palabras_re.findall(texto.lower())
+        i = 0
+
+        # tokenizar
+        tokens = []
+        while i < len(palabras):
+            # Manejo de agente/cliente
+            if i + 1 < len(palabras) and palabras[i + 1] == ":":
+                if palabras[i] == "agente":
+                    tokens.append(Token(TOKEN_AGENTE, "agente:"))
+                    i += 2
+                    continue
+                if palabras[i] == "cliente":
+                    tokens.append(Token(TOKEN_CLIENTE, "cliente:"))
+                    i += 2
+                    continue
+
+            # Búsqueda de frases (3, 2, 1 palabras)
+            for length in (3, 2, 1):
+                if i + length > len(palabras):
+                    continue
+
+                frase = " ".join(palabras[i : i + length])
+                tipo, puntuacion = self.tabla.buscar_palabra(frase)
+
+                if tipo != TIPO_DESCONOCIDO:
+                    tokens.append(Token(asignar_tipo(tipo), frase, puntuacion))
+                    i += length
+                    break
+            else:  # Si no se encontró ninguna frase válida
+                palabra = palabras[i]
+                if re.match(r"\W", palabra):
+                    tokens.append(Token(TOKEN_SIGNO_PUNTUACION, palabra))
+                else:
+                    tipo, puntuacion = self.tabla.buscar_palabra(palabra)
+                    tokens.append(Token(asignar_tipo(tipo), palabra, puntuacion))
+                i += 1
+
+        return tokens
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%     CODIGO           %
+%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Analizador de sentimientos}
+\begin{lstlisting}
+from dataclasses import dataclass, field
+from typing import List
+
+from tokenizer.TablaSentimientos import TablaSentimientos
+from tokenizer.tokens import (TOKEN_DESCONOCIDO, TOKEN_DESPEDIDA,
+                                   TOKEN_IDENTIFICACION, TOKEN_PROHIBIDA,
+                                   TOKEN_SALUDO, Token)
+
+
+@dataclass
+class ResultadoParticipante:
+    puntaje_total: int = 0
+    hay_saludo: bool = False
+    hay_despedida: bool = False
+    hay_identificacion: bool = False
+    hay_prohibidas: bool = False
+    desconocidas: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ResultadoConversacion:
+    cliente: ResultadoParticipante
+    agente: ResultadoParticipante
+    puntaje_total: int = 0
+    desconocidas_compartidas: List[str] = field(default_factory=list)
+
+
+def manejar_palabra_desconocida(
+    valor: str, tabla_sentimientos: TablaSentimientos
+) -> int:
+    """Muestra un menú ordenado para manejar una palabra desconocida."""
+
+    print(f"\nPalabra desconocida: '{valor}'")
+
+    while True:
+        print("Opciones:")
+        print("  [a] Agregar palabra manualmente")
+        print("  [c] Corregir usando una sugerencia")
+        print("  [i] Ignorar palabra")
+        opcion = input("Seleccione una opción: ").strip().lower()
+
+        if opcion == "a":
+            try:
+                puntaje = int(input(f"Ingrese puntaje para '{valor}': "))
+                tabla_sentimientos.agregar_palabra(valor, puntaje)
+                print(f"Palabra '{valor}' agregada con puntaje {puntaje}")
+                return puntaje
+            except ValueError:
+                print("Entrada inválida. Ingrese un número entero.")
+
+        elif opcion == "c":
+            sugerencias = tabla_sentimientos.sugerir_similares(valor)
+            if not sugerencias:
+                print("No se encontraron sugerencias.")
+                continue
+
+            print("\nSugerencias:")
+            for i, s in enumerate(sugerencias, 1):
+                puntaje = tabla_sentimientos.buscar_palabra(s)[1]
+                print(f"  {i}. {s} (puntaje: {puntaje})")
+
+            seleccion = input("Seleccione el número de la sugerencia: ").strip()
+            if seleccion.isdigit():
+                idx = int(seleccion) - 1
+                if 0 <= idx < len(sugerencias):
+                    corregida = sugerencias[idx]
+                    _, puntaje = tabla_sentimientos.buscar_palabra(corregida)
+                    print(f" Usando '{corregida}' con puntaje {puntaje}")
+                    return puntaje
+                else:
+                    print(" Número fuera de rango.")
+            else:
+                print("Entrada inválida.")
+
+        elif opcion == "i":
+            print(" Palabra ignorada.")
+            return 0
+
+        else:
+            print(" Opción no válida.")
+
+
+def analizar_sentimiento(
+    tokens: List[Token], tabla_sentimientos: TablaSentimientos
+) -> ResultadoConversacion:
+    """Analiza los tokens diferenciando entre cliente y agente."""
+    resultado = ResultadoConversacion(
+        cliente=ResultadoParticipante(), agente=ResultadoParticipante()
+    )
+    palabras_desconocidas = []
+    hablante_actual = "agente"  # 'cliente' o 'agente'
+
+    # Primera pasada: procesar tokens conocidos
+    for token in tokens:
+        # Determinar hablante actual
+        if token.type == "TOKEN_CLIENTE":
+            hablante_actual = "cliente"
+            continue
+        elif token.type == "TOKEN_AGENTE":
+            hablante_actual = "agente"
+            continue
+
+        # Si no hay hablante definido, saltar este token
+        if not hablante_actual:
+            continue
+
+        # Obtener referencia al participante actual
+        participante = getattr(resultado, hablante_actual)
+
+        # Procesar token según tipo
+        if token.type == TOKEN_PROHIBIDA:
+            participante.hay_prohibidas = True
+        elif token.type == TOKEN_SALUDO:
+            participante.hay_saludo = True
+        elif token.type == TOKEN_DESPEDIDA:
+            participante.hay_despedida = True
+        elif token.type == TOKEN_IDENTIFICACION:
+            participante.hay_identificacion = True
+        elif token.type == TOKEN_DESCONOCIDO:
+            palabras_desconocidas.append((hablante_actual, token.valor))
+
+        # Sumar puntuación siempre
+        participante.puntaje_total += token.puntuacion
+        resultado.puntaje_total += token.puntuacion
+
+    # Segunda pasada: manejar palabras desconocidas
+    if palabras_desconocidas:
+        print("\nPalabras desconocidas encontradas:")
+        for i, (_, palabra) in enumerate(palabras_desconocidas, 1):
+            print(f"{i}. {palabra}")
+
+        opcion = input("Desea corregir estas palabras (s/n): ").strip().lower()
+
+        if opcion == "s":
+            for hablante, palabra in palabras_desconocidas:
+                participante = getattr(resultado, hablante)
+                if puntaje := manejar_palabra_desconocida(palabra, tabla_sentimientos):
+                    participante.puntaje_total += puntaje
+                    resultado.puntaje_total += puntaje
+                else:
+                    participante.desconocidas.append(palabra)
+        else:
+            for hablante, palabra in palabras_desconocidas:
+                getattr(resultado, hablante).desconocidas.append(palabra)
+
+    return resultado
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%     CODIGO           %
+%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Menu principal}
+\begin{lstlisting}
+"""
+Dentro de este archivo se encuentra todo el codigo para realizar los reportes y manejar el cli.
+En su mayoria es codigo irrelevante para el objetivo principal, que es el analisis de
+sentimiento y especialmente el proceso de tokenizacion.
+"""
+
+import sys
+from pathlib import Path
+
+from tokenizer.AFDTokenizer import AFDTokenizer
+from tokenizer.analisis import ResultadoConversacion, analizar_sentimiento
+from tokenizer.HashTokenizer import HashTokenizer
+from tokenizer.TablaSentimientos import TablaSentimientos
+
+# Códigos ANSI para colores
+RESET = "\033[0m"
+BOLD = "\033[1m"
+RED = "\033[31m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+BLUE = "\033[34m"
+MAGENTA = "\033[35m"
+CYAN = "\033[36m"
+WHITE = "\033[37m"
+
+OUTPUT_PATH = Path("output")
+
+
+def aplicar_color(texto, color, usar_color):
+    return f"{color}{texto}{RESET}" if usar_color else texto
+
+
+def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
+    """Imprime los tokens en formato de tabla con opción de colores.
+
+    Args:
+        tokens: Lista de tokens a imprimir
+        tabla_sentimientos: Opcional, para mostrar puntuaciones
+        archivo: Opcional, archivo de salida (sin colores)
+        color: Si es True, usa colores ANSI (solo en consola)
+    """
+    usar_color = color and archivo is None
+
+    max_valor = max((len(token.valor) for token in tokens), default=10)
+    max_tipo = max((len(token.type) for token in tokens), default=10)
+    max_punt = 7  # ancho fijo para 'Puntaje'
+
+    def col(text, color_code):
+        return aplicar_color(text, color_code, usar_color)
+
+    if tabla_sentimientos:
+        encabezado = f"{col('Valor', BOLD):<{max_valor}}  {col('Tipo', BOLD):<{max_tipo}}  {col('Puntaje', BOLD):>{max_punt}}"
+        ancho_linea = max_valor + 2 + max_tipo + 2 + max_punt
+    else:
+        encabezado = (
+            f"{col('Valor', BOLD):<{max_valor}}  {col('Tipo', BOLD):<{max_tipo}}"
+        )
+        ancho_linea = max_valor + 2 + max_tipo
+
+    linea_sep = "-" * ancho_linea
+
+    # Para archivo, escribir con '\n'; para consola, print que ya lo agrega
+    def out(linea):
+        if archivo:
+            archivo.write(linea + "\n")
+        else:
+            print(linea)
+
+    out(encabezado)
+    out(linea_sep)
+
+    for token in tokens:
+        valor = token.valor
+        tipo = token.type
+        puntuacion = getattr(token, "puntuacion", "")
+        punt_str = f"{puntuacion:>{max_punt}}" if tabla_sentimientos else ""
+
+        if archivo:
+            linea = f"{valor:<{max_valor}}  {tipo:<{max_tipo}}"
+            if tabla_sentimientos:
+                linea += f"  {punt_str}"
+            out(linea)
+        else:
+            linea = f"{col(valor, MAGENTA):<{max_valor}}  {col(tipo, CYAN):<{max_tipo}}"
+            if tabla_sentimientos:
+                linea += f"  {col(punt_str, YELLOW):>{max_punt}}"
+            out(linea)
+
+
+def si_no(cond, invertido=False, usar_colores=True):
+    if not usar_colores:
+        return "Sí" if cond else "No"
+    color = GREEN if cond != invertido else RED
+    return f"{color}Sí{RESET}" if cond else f"{color}No{RESET}"
+
+
+def generar_seccion(nombre, datos, usar_colores=True):
+    bold = BOLD if usar_colores else ""
+    reset = RESET if usar_colores else ""
+    header = f"\n{bold + CYAN if usar_colores else ''}=== {nombre.upper()} ==={reset}"
+    return "\n".join(
+        [
+            header,
+            f"{bold}Puntaje:{reset} {datos.puntaje_total}",
+            f"{bold}Saludo:{reset} {si_no(datos.hay_saludo, usar_colores=usar_colores)}",
+            f"{bold}Despedida:{reset} {si_no(datos.hay_despedida, usar_colores=usar_colores)}",
+            f"{bold}Identificación:{reset} {si_no(datos.hay_identificacion, usar_colores=usar_colores)}",
+            f"{bold}Palabras prohibidas:{reset} {si_no(datos.hay_prohibidas, invertido=True, usar_colores=usar_colores)}",
+        ]
+    )
+
+
+def obtener_sentimiento(puntaje, usar_colores=True):
+    if usar_colores:
+        if puntaje > 0:
+            return f"{GREEN}POSITIVO{RESET}"
+        elif puntaje < 0:
+            return f"{RED}NEGATIVO{RESET}"
+        return f"{YELLOW}NEUTRAL{RESET}"
+    return "POSITIVO" if puntaje > 0 else "NEGATIVO" if puntaje < 0 else "NEUTRAL"
+
+
+def imprimir_resultados_analisis(resultado: ResultadoConversacion):
+    OUTPUT_PATH.mkdir(exist_ok=True)
+    # Archivo sin colores
+    with open(OUTPUT_PATH / "reporte.txt", "w", encoding="utf-8") as f:
+        f.write(
+            "\n".join(
+                [
+                    "=== RESUMEN GENERAL ===",
+                    f"Puntaje total: {resultado.puntaje_total}",
+                    f"Sentimiento: {obtener_sentimiento(resultado.puntaje_total, usar_colores=False)}",
+                    generar_seccion("Cliente", resultado.cliente, usar_colores=False),
+                    generar_seccion("Agente", resultado.agente, usar_colores=False),
+                    (
+                        "\nNota: Se ignoraron las palabras desconocidas"
+                        if resultado.cliente.desconocidas
+                        or resultado.agente.desconocidas
+                        else ""
+                    ),
+                ]
+            )
+        )
+
+    # Consola con colores
+    print(f"\n{BOLD}{MAGENTA}=== RESUMEN GENERAL ===")
+    print(f"{BOLD}{BLUE}Puntaje total:{RESET} {resultado.puntaje_total}")
+    print(
+        f"{BOLD}{BLUE}Sentimiento:{RESET} {obtener_sentimiento(resultado.puntaje_total)}"
+    )
+    print(generar_seccion("Cliente", resultado.cliente))
+    print(generar_seccion("Agente", resultado.agente))
+    if resultado.cliente.desconocidas or resultado.agente.desconocidas:
+        print(f"\n{YELLOW}Nota: Se ignoraron las palabras desconocidas{RESET}")
+
+
+def procesar_archivo(archivo_entrada, tokenizador, tabla_sentimientos):
+    try:
+        try:
+            texto = Path(archivo_entrada).read_text(encoding="utf-8")
+        except FileNotFoundError:
+            print(
+                f"{RED}Error: {archivo_entrada} no encontrado.{RESET}",
+                file=sys.stderr,
+            )
+            return False
+        except PermissionError:
+            print(
+                f"{RED}Error: Sin permisos para leer {archivo_entrada}.{RESET}",
+                file=sys.stderr,
+            )
+            return False
+
+        print(f"\n{BOLD}{BLUE}Procesando:{RESET} {archivo_entrada}")
+
+        tokens = tokenizador.tokenizar(texto)
+
+        try:
+            OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            print(f"{RED}Error al crear {OUTPUT_PATH}: {e}{RESET}", file=sys.stderr)
+            return False
+
+        archivo_salida = OUTPUT_PATH / "tokens.txt"
+        try:
+            with open(archivo_salida, "w", encoding="utf-8") as f:
+                imprimir_tokens(tokens, tabla_sentimientos, f, color=False)
+        except OSError as e:
+            print(
+                f"{RED}Error al escribir {archivo_salida}: {e}{RESET}",
+                file=sys.stderr,
+            )
+            return False
+
+        print(
+            f"{GREEN}Tokenización completada. Resultados en: {archivo_salida}{RESET}"
+        )
+
+        try:
+            resultado = analizar_sentimiento(tokens, tabla_sentimientos)
+            imprimir_resultados_analisis(resultado)
+        except Exception as e:
+            print(
+                f"{YELLOW} Advertencia: Error en análisis de sentimientos: {e}{RESET}",
+                file=sys.stderr,
+            )
+            return True  # éxito parcial
+
+        return True
+    except Exception as e:
+        print(f"{RED} Error inesperado: {e}{RESET}", file=sys.stderr)
+        return False
+
+
+def modo_interactivo(tabla_sentimientos, tokenizador):
+    print(f"\n{BOLD}{CYAN}=== Modo Interactivo ==={RESET}")
+    print(f"Ingrese texto a analizar (escriba {YELLOW}salir{RESET} para terminar):")
+
+    while True:
+        texto = input(f"\n{BOLD}{BLUE}Texto:{RESET} ").strip()
+        if texto.lower() == "salir":
+            break
+        if not texto:
+            continue
+        tokens = tokenizador.tokenizar(texto)
+        print(f"\n{BOLD}{BLUE}Tokens encontrados:{RESET}")
+        imprimir_tokens(tokens)
+        imprimir_resultados_analisis(analizar_sentimiento(tokens, tabla_sentimientos))
+
+
+def main():
+    tabla_sentimientos = TablaSentimientos()
+    usar_hashmap = "--hashmap" in sys.argv
+    if usar_hashmap:
+        tokenizador = HashTokenizer(tabla_sentimientos)
+        sys.argv.remove("--hashmap")
+    else:
+        tokenizador = AFDTokenizer(tabla_sentimientos)
+
+    if len(sys.argv) > 1:
+        archivo = Path(sys.argv[1])
+        if not archivo.exists():
+            print(
+                f"{RED} Error: El archivo {archivo} no existe.{RESET}", file=sys.stderr
+            )
+            sys.exit(1)
+        sys.exit(0 if procesar_archivo(archivo, tokenizador, tabla_sentimientos) else 1)
+    else:
+        modo_interactivo(tabla_sentimientos, tokenizador)
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}

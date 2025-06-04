@@ -20,9 +20,31 @@
 
 %%%% Entorno código - No usado de momento
 \usepackage{tcolorbox}
+\usepackage{textcomp}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{verbatim}
+\usepackage{listings}
+\usepackage{xcolor}  % Opcional, para colores
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    showstringspaces=false,
+    breaklines=true
+    extendedchars=true,
+    inputencoding=utf8,
+    literate=
+    {á}{{\'a}}1
+    {é}{{\'e}}1
+    {í}{{\'i}}1
+    {ó}{{\'o}}1
+    {ú}{{\'u}}1
+    {ñ}{{\~n}}1
+    {ü}{{\"u}}1,
+}
 
 %%% Grafos
 \usepackage{tikz}
@@ -73,9 +95,9 @@
 \input{conclusion}
 
 % Seccion de anexos
-\section*{Anexos}
-El codigo fuente de este proyecto puede ser encontrado en: 
-\href{https://github.com/elias-gill/tp-compiladores}{https://github.com/elias-gill/tp-compiladores}
+\section{Anexos}
+El codigo fuente completo de este proyecto puede ser encontrado en:
+\href{https://github.com/elias-gill/tp-compiladores}{https://github.com/elias-gill/tp-compiladores}.
 \input{codigos}
 
 \end{document}

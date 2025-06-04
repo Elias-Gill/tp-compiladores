@@ -41,27 +41,34 @@ def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
     """
     usar_color = color and archivo is None
 
-    # Anchos de columnas
-    max_valor = max(len(token.valor) for token in tokens) if tokens else 10
-    max_tipo = max(len(token.type) for token in tokens) if tokens else 10
-    max_punt = 7  # "Puntaje"
+    max_valor = max((len(token.valor) for token in tokens), default=10)
+    max_tipo = max((len(token.type) for token in tokens), default=10)
+    max_punt = 7  # ancho fijo para 'Puntaje'
 
-    # Encabezado
-    encabezado = (
-        f"{aplicar_color('Valor', BOLD, usar_color):<{max_valor}}  "
-        f"{aplicar_color('Tipo', BOLD, usar_color):<{max_tipo}}  "
-        f"{aplicar_color('Puntaje', BOLD, usar_color) if tabla_sentimientos else ''}"
-    )
+    def col(text, color_code):
+        return aplicar_color(text, color_code, usar_color)
 
-    linea_sep = "-" * (
-        max_valor + max_tipo + (max_punt if tabla_sentimientos else 0) + 4
-    )
+    if tabla_sentimientos:
+        encabezado = f"{col('Valor', BOLD):<{max_valor}}  {col('Tipo', BOLD):<{max_tipo}}  {col('Puntaje', BOLD):>{max_punt}}"
+        ancho_linea = max_valor + 2 + max_tipo + 2 + max_punt
+    else:
+        encabezado = (
+            f"{col('Valor', BOLD):<{max_valor}}  {col('Tipo', BOLD):<{max_tipo}}"
+        )
+        ancho_linea = max_valor + 2 + max_tipo
 
-    out = archivo.write if archivo else print
+    linea_sep = "-" * ancho_linea
+
+    # Para archivo, escribir con '\n'; para consola, print que ya lo agrega
+    def out(linea):
+        if archivo:
+            archivo.write(linea + "\n")
+        else:
+            print(linea)
+
     out(encabezado)
     out(linea_sep)
 
-    # Cuerpo
     for token in tokens:
         valor = token.valor
         tipo = token.type
@@ -69,13 +76,15 @@ def imprimir_tokens(tokens, tabla_sentimientos=None, archivo=None, color=True):
         punt_str = f"{puntuacion:>{max_punt}}" if tabla_sentimientos else ""
 
         if archivo:
-            out(f"{valor:<{max_valor}}  {tipo:<{max_tipo}}  {punt_str}")
+            linea = f"{valor:<{max_valor}}  {tipo:<{max_tipo}}"
+            if tabla_sentimientos:
+                linea += f"  {punt_str}"
+            out(linea)
         else:
-            out(
-                f"{aplicar_color(valor, MAGENTA, usar_color):<{max_valor}}  "
-                f"{aplicar_color(tipo, CYAN, usar_color):<{max_tipo}}  "
-                f"{aplicar_color(punt_str, YELLOW, usar_color)}"
-            )
+            linea = f"{col(valor, MAGENTA):<{max_valor}}  {col(tipo, CYAN):<{max_tipo}}"
+            if tabla_sentimientos:
+                linea += f"  {col(punt_str, YELLOW):>{max_punt}}"
+            out(linea)
 
 
 def si_no(cond, invertido=False, usar_colores=True):
