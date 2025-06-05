@@ -1,1 +1,19 @@
-Buenas, estoy llamando ya recalentado, discúlpame la presión pero esto ya es una tomadura de peluche, cuántas veces voy a tener que llamar por lo mismo el Internet no anda desde hace dos días y nadie hace nada buenas tardes, lamento mucho lo que estás pasando, me podrías dar tu número de línea para verificar el estado del Servicio 09826543214 me dicen vamos a revisar y nadie cambia ya reviso, efectivamente veo que hay un reporte abierto, voy a escalar esto ahora mismo al área técnica con carácter de urgencia y es una falta de respeto, te pido disculpas de parte de la empresa, te voy a enviar también una bonificación por el tiempo sin servicio. Si me solucionan hoy mañana mismo me cambio de compañía, estoy harto, ya entiendo tu molestia, estoy dejando asentado todo y me comprometo a darle seguimiento, te voy a llamar apenas haya respuesta del Técnico
+```txt
+Cliente: Buenas, estoy llamando ya recalentado, discúlpame la presión pero esto ya es una
+tomadura de peluche, cuántas veces voy a tener que llamar por lo mismo. El Internet no anda
+desde hace dos días y nadie hace nada.
+
+Agente: Buenas tardes, lamento mucho lo que estás pasando, ¿me podrías dar tu número de línea
+para verificar el estado del servicio?
+
+Cliente: 09826543214. Me dicen “vamos a revisar” y nadie cambia nada.
+
+Agente: Ya reviso, efectivamente veo que hay un reporte abierto. Voy a escalar esto ahora mismo
+al área técnica con carácter de urgencia. Y es una falta de respeto, te pido disculpas de parte
+de la empresa. Te voy a enviar también una bonificación por el tiempo sin servicio.
+
+Cliente: Si me solucionan hoy, mañana mismo me cambio de compañía. Estoy harto.
+
+Agente: Ya entiendo tu molestia, estoy dejando asentado todo y me comprometo a darle
+seguimiento. Te voy a llamar apenas haya respuesta del técnico.
+```

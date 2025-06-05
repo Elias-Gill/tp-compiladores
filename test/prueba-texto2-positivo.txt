@@ -1,1 +1,14 @@
-Hola muy buenas, qué tal quería llamar nomás porque quería avisar que me sorprendió lo rápido que me activaron mi plan ayer a la tarde nomás pedí y hoy ya estaba todo funcionando correctamente en serio. Esto es un lujo hola buenas tardes, muchísimas gracias por tu comentario, me alegra un montón que Servicio fue rápido y sin inconvenientes, hay algo más en lo que te podamos ayudarno nada más que eso sólo quería agradecer de verdad da gusto cuando las cosas funcionan así que bueno muchísimo por tu buena onda, si necesitas algo estamos siempre disponibles para vos. Te deseo que tengas un lindo día, muchísimas gracias, muchas gracias, saludos a todo el equipo chao chao
+Cliente: Hola muy buenas, qué tal. Quería llamar nomás porque quería avisar que me sorprendió
+lo rápido que me activaron mi plan. Ayer a la tarde nomás pedí y hoy ya estaba todo funcionando
+correctamente. En serio. Esto es un lujo.
+
+Agente: Hola, buenas tardes. Muchísimas gracias por tu comentario, me alegra un montón que el
+servicio fue rápido y sin inconvenientes. ¿Hay algo más en lo que te podamos ayudar?
+
+Cliente: No, nada más que eso. Sólo quería agradecer de verdad. Da gusto cuando las cosas
+funcionan así.
+
+Agente: Qué bueno, muchísimas gracias por tu buena onda. Si necesitás algo, estamos siempre
+disponibles para vos. Te deseo que tengas un lindo día.
+
+Cliente: Muchísimas gracias, muchas gracias. Saludos a todo el equipo. Chao chao.
