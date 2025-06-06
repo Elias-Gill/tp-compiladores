@@ -3,6 +3,19 @@
 módulos principales. El código fuente de dichas clases se proporciona en la
 \hyperref[sec:Anexos]{sección de Anexos} (página \pageref{sec:Anexos}).
 
+\subsection{Converión de audio a texto}
+
+Para realizar la transcripcion de audio a texto se utilizo el dictado por vos del teclado de
+Google. Luego, con la finalidad de identificar los hablantes, se proporciono el
+texto transcripto a ChatGPT utilizando el siguiente prompt:
+
+\begin{verbatim}
+Identifica y separa los diálogos entre el Agente y 
+el Cliente en el siguiente texto:
+<insertar el texto>
+Dame el resultado en el formato 'Agente:' y 'Cliente:'
+\end{verbatim}
+
 \subsection{Estructura del codigo}
 El código está estructurado de la siguiente manera:
 
